@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'spaceinvaders',
 ]
 
 MIDDLEWARE = [
@@ -75,7 +76,7 @@ WSGI_APPLICATION = 'spaceinvaders.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'spaceinvaders',
+        'NAME': 'spaceinvaders_schema',
         'USER': 'spaceinvaders_db_user',
         'PASSWORD': 'spaceinvaders_pass',
         'HOST': 'localhost',
