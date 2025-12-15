@@ -26,5 +26,5 @@ def save_score(request):
             'name': name,
             'score': score,
         },
-        status=200
+        status=201
     )
