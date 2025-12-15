@@ -21,4 +21,5 @@ import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/leaderboard/', views.get_leaderboard, name='get_leaderboard'),
+    path('api/save-score/', views.save_score, name='save_score'),
 ]
