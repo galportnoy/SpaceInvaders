@@ -1,6 +1,13 @@
 .spaceship-size {
     position: absolute;
-    left: 50%;
     bottom: 50px;
+    transform: translateX(-50%);
+}
+
+.spaceship-container {
+    --spaceship-position: 50%;
+    position: absolute;
+    left: var(--spaceship-position);
+    bottom: 5%;
     transform: translateX(-50%);
 }
