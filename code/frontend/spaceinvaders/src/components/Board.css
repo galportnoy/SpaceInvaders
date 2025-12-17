@@ -1,11 +1,12 @@
 .board{
-    width: 800px;
-    height: 600px;
+    width: min(90vw, 900px);
+    aspect-ratio: 4 / 3;
     border: 2px solid white;
     background-color: black;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
 
 .start-button{
