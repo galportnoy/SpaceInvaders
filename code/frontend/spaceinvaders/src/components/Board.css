@@ -1,11 +1,12 @@
 .board{
-    width: 650px;
-    height: 500px;
+    width: min(90vw, 900px);
+    aspect-ratio: 4 / 3;
     border: 2px solid white;
     background-color: black;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
 
 .start-button{
@@ -13,4 +14,11 @@
     font-size: 24px;
     border-radius: 12px;
     cursor: pointer;
+}
+
+.spaceship-slot{
+    position: absolute;
+    left: 50%;
+    bottom: 15%;
+    transform: translateX(-50%);
 }
