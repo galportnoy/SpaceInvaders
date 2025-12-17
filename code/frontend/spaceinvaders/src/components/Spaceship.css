@@ -1,0 +1,6 @@
+.spaceship-slot {
+    position: absolute;
+    left: 50%;
+    bottom: 50px;
+    transform: translateX(-50%);
+}

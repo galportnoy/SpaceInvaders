@@ -1,23 +1,20 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import './Board.css';
 import Spaceship from '../components/Spaceship.jsx';
 
 function Board() {
     const [started, setStarted] = useState(false);
     const handleStart = () => setStarted(true);
+    const boardElementRef = useRef(null);
 
     return (
-        <div className="board">
+        <div className="board" ref={boardElementRef}>
             {!started && (
                 <button className="start-button" onClick={handleStart}>
                     start
                 </button>
             )}
-            {started &&
-                <div className="spaceship-slot">
-                    <Spaceship/>
-                </div>
-                }
+            {started && <Spaceship boardElementRef={boardElementRef} />}
         </div>
     );
 }
