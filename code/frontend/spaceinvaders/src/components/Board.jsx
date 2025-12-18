@@ -13,11 +13,7 @@ function Board() {
                     start
                 </button>
             )}
-            {started &&
-                <div className="spaceship-slot">
-                    <Spaceship/>
-                </div>
-                }
+            {started && <Spaceship />}
         </div>
     );
 }
