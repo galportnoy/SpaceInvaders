@@ -1,4 +1,4 @@
-import alienImg from '../assets/space squid.png';
+import alienImg from '../assets/space_squid.png';
 
 function Alien() {
     return (
