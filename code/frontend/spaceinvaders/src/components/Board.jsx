@@ -1,12 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import './Board.css';
 import Spaceship from '../components/Spaceship.jsx';
-import Projectile from "./Projectile.jsx";
+import Projectile from './Projectile.jsx';
 
 const SHIP_Y = 580;
 const SHOT_SPEED = 20;
-
-
 
 function Board() {
     const [started, setStarted] = useState(false);
@@ -16,47 +14,40 @@ function Board() {
 
     const handleStart = () => setStarted(true);
 
-
-    useEffect(()=>{
-        if(!started) return;
-
-        const onKeyDown = (e) =>{
-            if (e.key !== ' ') return;
-            e.preventDefault();
-
-            if (shot!= null) return;
-
-            setShot({
-                xPercent : shipX,
-                yPx : SHIP_Y,
-            });
-        };
-        window.addEventListener('keydown',onKeyDown);
-        return()=> window.removeEventListener('keydown',onKeyDown);
-    }, [started,shipX,shot]);
-
     useEffect(() => {
         if (!started) return;
 
-        if (shot == null) return;
+        const onKeyDown = (e) => {
+            if (e.key !== ' ') return;
+            e.preventDefault();
 
-        const interval = setInterval(()=>{
+            if (shot != null) return;
+
+            setShot({
+                xPercent: shipX,
+                yPx: SHIP_Y,
+            });
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [started, shipX, shot]);
+
+    useEffect(() => {
+        if (!started || shot == null) return;
+
+        const timeout = setTimeout(() => {
             setShot((prev) => {
-                if (prev == null) return null;
+                if (!prev) return null;
 
                 const nextY = prev.yPx - SHOT_SPEED;
-
                 if (nextY < 0) return null;
 
-                return {
-                    xPercent: prev.xPercent
-                    ,yPx: nextY};
+                return { ...prev, yPx: nextY };
             });
-        },30);
+        }, 30);
 
-        return ()=>clearInterval(interval);
+        return () => clearTimeout(timeout);
     }, [started, shot]);
-
 
     return (
         <div className="board">
@@ -67,9 +58,9 @@ function Board() {
             )}
             {started && (
                 <>
-                    <Spaceship onPositionChange={setShipX}/>
+                    <Spaceship onPositionChange={setShipX} />
                     {shot !== null && (
-                        <Projectile xPercent={shot.xPercent} yPx={shot.yPx}/>
+                        <Projectile xPercent={shot.xPercent} yPx={shot.yPx} />
                     )}
                 </>
             )}
