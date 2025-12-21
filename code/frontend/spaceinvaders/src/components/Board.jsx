@@ -7,26 +7,18 @@ function Board() {
     const [started, setStarted] = useState(false);
     const handleStart = () => setStarted(true);
 
-    const gamePieces = () => {
-        return (
-            <>
-                <Alien />
-                <Spaceship />
-            </>
-        );
-    };
-
-    const startButton = () => {
-        return (
-            <button className="start-button" onClick={handleStart}>
-                start
-            </button>
-        );
-    };
-
     return (
         <div className="board">
-            {!started ? startButton() : gamePieces()}
+            {!started ?
+                <button className="start-button" onClick={handleStart}>
+                    start
+                </button>
+                :
+                <>
+                    <Alien />
+                    <Spaceship />
+                </>
+            }
         </div>
     );
 }
