@@ -31,6 +31,16 @@ function Alien() {
         isDirectionRight.current = !isDirectionRight.current;
     }
 
+    const stepDown = (interval) => {
+        setVerticalPosition((prevYPosition) => {
+            const newYposition = prevYPosition + STEP_DOWN;
+            if(newYposition >= SPACESHIP_LINE) {
+                clearInterval(interval);
+            }
+            return newYposition;
+        });
+    }
+
     useEffect(() => {
         const interval = setInterval(() => {
             setHorizontalPosition((prevXPosition) => {
@@ -39,18 +49,12 @@ function Alien() {
 
                 if (hitBorder) {
                     changeDirection();
-                    setVerticalPosition((prevYPosition) => {
-                        const newYposition = prevYPosition + STEP_DOWN;
-                        if(newYposition >= SPACESHIP_LINE) {
-                            clearInterval(interval);
-                        }
-                        return newYposition;
-                    });
+                    stepDown(interval);
                     return prevXPosition;
                 }
                 return newXPosition;
             });
-        }, 300);
+        }, 30);
 
         return () => clearInterval(interval);
     }, []);
