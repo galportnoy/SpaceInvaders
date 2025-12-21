@@ -54,7 +54,7 @@ function Alien() {
                 }
                 return newXPosition;
             });
-        }, 30);
+        }, 300);
 
         return () => clearInterval(interval);
     }, []);
