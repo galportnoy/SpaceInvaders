@@ -1,8 +1,8 @@
 .alien-container {
-    --spaceship-position-x: 50%;
-    --spaceship-position-y: 5%;
+    --alien-position-x: 50%;
+    --alien-position-y: 5%;
     position: absolute;
-    left: var(--spaceship-position-x);
-    top: var(--spaceship-position-y);
+    left: var(--alien-position-x);
+    top: var(--alien-position-y);
     transform: translateX(-50%);
 }
