@@ -6,7 +6,7 @@ const LEFT_ARROW = 'ArrowLeft';
 const RIGHT_ARROW = 'ArrowRight';
 const MOVE_SPEED = 2;
 
-function Spaceship() {
+function Spaceship({onPositionChange} ) {
     const [position, setPosition] = useState(50);
 
     const handleKeyDown = (e) => {
@@ -24,6 +24,13 @@ function Spaceship() {
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [handleKeyDown]);
+
+    useEffect(() => {
+        if (onPositionChange){
+            onPositionChange(position);
+        }
+    }, [position, onPositionChange]);
+
 
     return (
         <div
