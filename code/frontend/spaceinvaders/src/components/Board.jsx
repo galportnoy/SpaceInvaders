@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Board.css';
 import Spaceship from '../components/Spaceship.jsx';
 import Projectile from './Projectile.jsx';
+import Alien from '../components/Alien.jsx';
 
 const SHIP_Y = 580;
 const SHOT_SPEED = 20;
@@ -58,6 +59,7 @@ function Board() {
             )}
             {started && (
                 <>
+                    <Alien/>
                     <Spaceship onPositionChange={setShipX} />
                     {shot !== null && (
                         <Projectile xPercent={shot.xPercent} yPx={shot.yPx} />

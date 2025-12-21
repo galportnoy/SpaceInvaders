@@ -1,0 +1,8 @@
+.alien-container {
+    --alien-position-x: 50%;
+    --alien-position-y: 5%;
+    position: absolute;
+    left: var(--alien-position-x);
+    top: var(--alien-position-y);
+    transform: translateX(-50%);
+}
