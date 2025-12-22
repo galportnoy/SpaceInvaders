@@ -8,7 +8,7 @@ const RIGHT_BORDER = 95;
 const LEFT_BORDER = 5;
 const SPACESHIP_LINE = 90;
 
-function Alien() {
+function Alien({ onPositionChange, alive = true }) {
     const [horizontalPosition, setHorizontalPosition] = useState(50);
     const [verticalPosition, setVerticalPosition] = useState(5);
 
@@ -24,28 +24,29 @@ function Alien() {
         } else {
             newXPosition -= MOVE_SPEED;
         }
-        return newXPosition
+        return newXPosition;
     };
 
-    const changeDirection= () => {
+    const changeDirection = () => {
         isDirectionRight.current = !isDirectionRight.current;
-    }
+    };
 
     const stepDown = (interval) => {
         setVerticalPosition((prevYPosition) => {
             const newYposition = prevYPosition + STEP_DOWN;
-            if(newYposition >= SPACESHIP_LINE) {
+            if (newYposition >= SPACESHIP_LINE) {
                 clearInterval(interval);
             }
             return newYposition;
         });
-    }
+    };
 
     useEffect(() => {
         const interval = setInterval(() => {
             setHorizontalPosition((prevXPosition) => {
                 const newXPosition = moveHorizontally(prevXPosition);
-                const hitBorder = newXPosition <= LEFT_BORDER || newXPosition >= RIGHT_BORDER;
+                const hitBorder =
+                    newXPosition <= LEFT_BORDER || newXPosition >= RIGHT_BORDER;
 
                 if (hitBorder) {
                     changeDirection();
@@ -54,10 +55,21 @@ function Alien() {
                 }
                 return newXPosition;
             });
-        }, 300);
+        }, 100);
 
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        if (onPositionChange) {
+            onPositionChange({
+                xPercent: horizontalPosition,
+                yPercent: verticalPosition,
+            });
+        }
+    }, [horizontalPosition, verticalPosition, onPositionChange]);
+
+    if (!alive) return null;
 
     return (
         <div className="alien-container" style={dynamicStyle}>
