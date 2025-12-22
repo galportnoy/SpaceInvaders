@@ -55,7 +55,7 @@ function Alien({ onPositionChange, alive = true }) {
                 }
                 return newXPosition;
             });
-        }, 700);
+        }, 100);
 
         return () => clearInterval(interval);
     }, []);

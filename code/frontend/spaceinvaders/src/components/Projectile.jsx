@@ -38,7 +38,7 @@ function Projectile({ startX, startY, onMove, onDone }) {
         }, 30);
 
         return () => clearInterval(interval);
-    });
+    }, [onMove, onDone]);
 
     return (
         <div
