@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import './Projectile.css';
 
 const SHOT_SPEED = 2;
@@ -9,6 +9,14 @@ function Projectile({ startX, startY, onMove, onDone }) {
         yPercent: startY,
     });
 
+    const onMoveRef = useRef(onMove);
+    const onDoneRef = useRef(onDone);
+
+    useEffect(() => {
+        onMoveRef.current = onMove;
+        onDoneRef.current = onDone;
+    });
+
     useEffect(() => {
         const interval = setInterval(() => {
             setPos((prev) => {
@@ -16,11 +24,7 @@ function Projectile({ startX, startY, onMove, onDone }) {
 
                 if (nextY < 0) {
                     clearInterval(interval);
-
-                    if (onDone) {
-                        onDone();
-                    }
-
+                    onDoneRef.current?.();
                     return prev;
                 }
 
@@ -29,16 +33,13 @@ function Projectile({ startX, startY, onMove, onDone }) {
                     yPercent: nextY,
                 };
 
-                if (onMove) {
-                    onMove(next);
-                }
-
+                onMoveRef.current?.(next);
                 return next;
             });
         }, 30);
 
         return () => clearInterval(interval);
-    }, [onMove, onDone]);
+    }, []);
 
     return (
         <div
