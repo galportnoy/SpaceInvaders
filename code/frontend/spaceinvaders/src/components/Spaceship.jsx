@@ -5,6 +5,7 @@ import './Spaceship.css';
 const LEFT_ARROW = 'ArrowLeft';
 const RIGHT_ARROW = 'ArrowRight';
 const MOVE_SPEED = 1;
+const MOVEMENT_INTERVAL_MS = 16;
 
 function Spaceship({ onPositionChange }) {
     const [position, setPosition] = useState(50);
@@ -24,16 +25,16 @@ function Spaceship({ onPositionChange }) {
 
         const interval = setInterval(() => {
             setPosition((prev) => {
-                let next = prev;
+                let delta = 0;
                 if (keysPressed.current.has(LEFT_ARROW)) {
-                    next = Math.max(5, next - MOVE_SPEED);
+                    delta -= MOVE_SPEED;
                 }
                 if (keysPressed.current.has(RIGHT_ARROW)) {
-                    next = Math.min(95, next + MOVE_SPEED);
+                    delta += MOVE_SPEED;
                 }
-                return next;
+                return Math.max(5, Math.min(95, prev + delta));
             });
-        }, 16);
+        }, MOVEMENT_INTERVAL_MS);
 
         return () => {
             window.removeEventListener('keydown', handleKeyDown);

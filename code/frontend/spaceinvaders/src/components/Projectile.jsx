@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import './Projectile.css';
 
 const SHOT_SPEED = 2;
+const PROJECTILE_INTERVAL_MS = 30;
 
 function Projectile({ startX, startY, onMove, onDone }) {
     const [pos, setPos] = useState({
@@ -15,7 +16,7 @@ function Projectile({ startX, startY, onMove, onDone }) {
     useEffect(() => {
         onMoveRef.current = onMove;
         onDoneRef.current = onDone;
-    });
+    }, [onMove, onDone]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -36,7 +37,7 @@ function Projectile({ startX, startY, onMove, onDone }) {
                 onMoveRef.current?.(next);
                 return next;
             });
-        }, 30);
+        }, PROJECTILE_INTERVAL_MS);
 
         return () => clearInterval(interval);
     }, []);
