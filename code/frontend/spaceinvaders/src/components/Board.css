@@ -15,3 +15,8 @@
     border-radius: 12px;
     cursor: pointer;
 }
+
+.game-content {
+    position: absolute;
+    inset: 0;
+}
