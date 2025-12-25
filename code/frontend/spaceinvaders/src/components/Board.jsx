@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './Board.css';
 import Spaceship from '../components/Spaceship.jsx';
 import Projectile from './Projectile.jsx';
@@ -21,10 +21,11 @@ function Board() {
     const [gameKey, setGameKey] = useState(0);
 
     const [shipX, setShipX] = useState(50);
-    const [shot, setShot] = useState(null);
+    const [shots, setShots] = useState([]);
     const [alienAlive, setAlienAlive] = useState(true);
     const [alienPos, setAlienPos] = useState({ xPercent: 50, yPercent: 5 });
     const [score, setScore] = useState(0);
+    const shotIdRef = useRef(0);
 
     const isPlaying = gameState === GAME_STATE.PLAYING;
     const isGameOver = gameState === GAME_STATE.GAME_OVER;
@@ -42,7 +43,7 @@ function Board() {
 
     const handlePlayAgain = () => {
         setShipX(50);
-        setShot(null);
+        setShots([]);
         setAlienAlive(true);
         setAlienPos({ xPercent: 50, yPercent: 5 });
         setGameKey((prev) => prev + 1);
@@ -54,72 +55,91 @@ function Board() {
         if (!isPlaying) return;
 
         const onKeyDown = (e) => {
-            if (e.key !== ' ') return;
             e.preventDefault();
+            if (e.key !== ' ') return;
+            if (e.repeat) return;
 
-            if (shot != null) return;
-
-            setShot({
+            const newShot = {
+                id: shotIdRef.current++,
                 xPercent: shipX,
                 yPercent: SHIP_Y,
-            });
+            };
+
+            setShots((prev) => [...prev, newShot]);
         };
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [isPlaying, shipX, shot]);
+    }, [isPlaying, shipX]);
 
-    const handleShotMove = (nextPos) => {
-        if (!alienAlive) {
-            setShot(nextPos);
-            return;
-        }
+    const handleShotMove = (shotId, nextPos) => {
+        setShots((prevShots) => {
+            return prevShots.map((shot) => {
+                if (shot.id === shotId) {
+                    return {
+                        ...shot,
+                        xPercent: nextPos.xPercent,
+                        yPercent: nextPos.yPercent,
+                    };
+                }
+                return shot;
+            });
+        });
+        if (!alienAlive) return;
 
         const dx = Math.abs(nextPos.xPercent - alienPos.xPercent);
         const dy = Math.abs(nextPos.yPercent - alienPos.yPercent);
 
         if (dx <= HIT_X && dy <= HIT_Y) {
             setAlienAlive(false);
-            setShot(null);
+            setShots((prev) => prev.filter((s) => s.id !== shotId));
             setScore((prev) => prev + 100);
-            return;
         }
+    };
 
-        setShot(nextPos);
+    const handleProjectileDone = (shotId) => {
+        setShots((prev) => prev.filter((s) => s.id !== shotId));
+    };
+
+    const renderGame = () => {
+        return (
+            <div key={gameKey} className="game-content">
+                <Alien
+                    alive={alienAlive}
+                    gameOver={isGameOver}
+                    onPositionChange={handleAlienPositionChange}
+                />
+
+                <Spaceship onPositionChange={setShipX} />
+
+                {shots.map((s) => (
+                    <Projectile
+                        key={s.id}
+                        startX={s.xPercent}
+                        startY={s.yPercent}
+                        onMove={(nextPos) => handleShotMove(s.id, nextPos)}
+                        onDone={() => handleProjectileDone(s.id)}
+                    />
+                ))}
+
+                {isGameOver && (
+                    <GameOver score={score} onPlayAgain={handlePlayAgain} />
+                )}
+            </div>
+        );
     };
 
     return (
         <div className="game-wrapper">
             <ScoreBar score={score} />
+
             <div className="board">
                 {isIdle && (
                     <button className="start-button" onClick={handleStart}>
                         start
                     </button>
                 )}
-                {!isIdle && (
-                    <div key={gameKey} className="game-content">
-                        <Alien
-                            alive={alienAlive}
-                            gameOver={isGameOver}
-                            onPositionChange={handleAlienPositionChange}
-                        />
-                        <Spaceship onPositionChange={setShipX} />
-                        {shot !== null && (
-                            <Projectile
-                                startX={shot.xPercent}
-                                startY={shot.yPercent}
-                                onMove={handleShotMove}
-                                onDone={() => setShot(null)}
-                            />
-                        )}
-                        {isGameOver && (
-                            <GameOver
-                                score={score}
-                                onPlayAgain={handlePlayAgain}
-                            />
-                        )}
-                    </div>
-                )}
+
+                {!isIdle && renderGame()}
             </div>
         </div>
     );
