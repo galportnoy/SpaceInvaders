@@ -4,6 +4,7 @@ import Spaceship from '../components/Spaceship.jsx';
 import Projectile from './Projectile.jsx';
 import Alien from '../components/Alien.jsx';
 import GameOver from './GameOver.jsx';
+import ScoreBar from './ScoreBar.jsx';
 
 const SHIP_Y = 90;
 const HIT_X = 2;
@@ -23,6 +24,7 @@ function Board() {
     const [shot, setShot] = useState(null);
     const [alienAlive, setAlienAlive] = useState(true);
     const [alienPos, setAlienPos] = useState({ xPercent: 50, yPercent: 5 });
+    const [score, setScore] = useState(0);
 
     const isPlaying = gameState === GAME_STATE.PLAYING;
     const isGameOver = gameState === GAME_STATE.GAME_OVER;
@@ -45,6 +47,7 @@ function Board() {
         setAlienPos({ xPercent: 50, yPercent: 5 });
         setGameKey((prev) => prev + 1);
         setGameState(GAME_STATE.PLAYING);
+        setScore(0);
     };
 
     useEffect(() => {
@@ -77,6 +80,7 @@ function Board() {
         if (dx <= HIT_X && dy <= HIT_Y) {
             setAlienAlive(false);
             setShot(null);
+            setScore((prev) => prev + 100);
             return;
         }
 
@@ -84,31 +88,39 @@ function Board() {
     };
 
     return (
-        <div className="board">
-            {isIdle && (
-                <button className="start-button" onClick={handleStart}>
-                    start
-                </button>
-            )}
-            {!isIdle && (
-                <div key={gameKey} className="game-content">
-                    <Alien
-                        alive={alienAlive}
-                        gameOver={isGameOver}
-                        onPositionChange={handleAlienPositionChange}
-                    />
-                    <Spaceship onPositionChange={setShipX} />
-                    {shot !== null && (
-                        <Projectile
-                            startX={shot.xPercent}
-                            startY={shot.yPercent}
-                            onMove={handleShotMove}
-                            onDone={() => setShot(null)}
+        <div className="game-wrapper">
+            <ScoreBar score={score} />
+            <div className="board">
+                {isIdle && (
+                    <button className="start-button" onClick={handleStart}>
+                        start
+                    </button>
+                )}
+                {!isIdle && (
+                    <div key={gameKey} className="game-content">
+                        <Alien
+                            alive={alienAlive}
+                            gameOver={isGameOver}
+                            onPositionChange={handleAlienPositionChange}
                         />
-                    )}
-                    {isGameOver && <GameOver onPlayAgain={handlePlayAgain} />}
-                </div>
-            )}
+                        <Spaceship onPositionChange={setShipX} />
+                        {shot !== null && (
+                            <Projectile
+                                startX={shot.xPercent}
+                                startY={shot.yPercent}
+                                onMove={handleShotMove}
+                                onDone={() => setShot(null)}
+                            />
+                        )}
+                        {isGameOver && (
+                            <GameOver
+                                score={score}
+                                onPlayAgain={handlePlayAgain}
+                            />
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
