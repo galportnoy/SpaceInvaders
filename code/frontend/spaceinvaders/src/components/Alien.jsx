@@ -7,12 +7,19 @@ const STEP_DOWN = 5;
 const RIGHT_BORDER = 95;
 const LEFT_BORDER = 5;
 const SPACESHIP_LINE = 90;
+const MOVEMENT_INTERVAL_MS = 100;
 
-function Alien({ onPositionChange, alive = true }) {
+function Alien({ onPositionChange, alive = true, gameOver = false }) {
     const [horizontalPosition, setHorizontalPosition] = useState(50);
     const [verticalPosition, setVerticalPosition] = useState(5);
 
     const isDirectionRight = useRef(true);
+    const gameOverRef = useRef(gameOver);
+
+    useEffect(() => {
+        gameOverRef.current = gameOver;
+    }, [gameOver]);
+
     const dynamicStyle = {
         '--alien-position-x': `${horizontalPosition}%`,
         '--alien-position-y': `${verticalPosition}%`,
@@ -43,6 +50,10 @@ function Alien({ onPositionChange, alive = true }) {
 
     useEffect(() => {
         const interval = setInterval(() => {
+            if (gameOverRef.current) {
+                clearInterval(interval);
+                return;
+            }
             setHorizontalPosition((prevXPosition) => {
                 const newXPosition = moveHorizontally(prevXPosition);
                 const hitBorder =
@@ -55,7 +66,7 @@ function Alien({ onPositionChange, alive = true }) {
                 }
                 return newXPosition;
             });
-        }, 100);
+        }, MOVEMENT_INTERVAL_MS);
 
         return () => clearInterval(interval);
     }, []);
