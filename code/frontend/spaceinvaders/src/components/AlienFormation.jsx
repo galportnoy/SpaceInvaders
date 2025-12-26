@@ -13,9 +13,9 @@ const MOVEMENT_INTERVAL_MS = 100;
 function createAlienArray() {
     const alienArray = [];
     let id = 0;
-    for (let i = 0; i < ROWS; i++) {
-        for (let j = 0; j < COLS; j++) {
-            alienArray.push({ id: id++, row: i, col: j, alive: true });
+    for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+            alienArray.push({ id: id++, row, col, alive: true });
         }
     }
     return alienArray;
