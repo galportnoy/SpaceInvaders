@@ -103,7 +103,9 @@ function Board() {
     const renderGame = () => {
         return (
             <div key={gameKey} className="game-content">
-                <AlienFormation/>
+                <AlienFormation
+                    gameOver={isGameOver}
+                />
 
                 <Spaceship onPositionChange={setShipX} />
 
