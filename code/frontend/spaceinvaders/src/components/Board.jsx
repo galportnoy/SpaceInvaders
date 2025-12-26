@@ -25,6 +25,7 @@ function Board() {
     const [aliensPositions, setAliensPositions] = useState([]);
     const [score, setScore] = useState(0);
     const shotIdRef = useRef(0);
+    const formationRef = useRef(null);
 
     const isPlaying = gameState === GAME_STATE.PLAYING;
     const isGameOver = gameState === GAME_STATE.GAME_OVER;
@@ -88,6 +89,7 @@ function Board() {
             const dy = Math.abs(nextPos.yPercent - alien.yPercent);
 
             if (dx <= HIT_X && dy <= HIT_Y) {
+                formationRef.current?.killAlien(alien.id)
                 setShots((prev) => prev.filter((s) => s.id !== shotId));
                 setScore((prev) => prev + 100);
                 break;
@@ -103,6 +105,7 @@ function Board() {
         return (
             <div key={gameKey} className="game-content">
                 <AlienFormation
+                    ref={formationRef}
                     gameOver={isGameOver}
                     onAliensChange={handleAliensPositionChange}
                 />

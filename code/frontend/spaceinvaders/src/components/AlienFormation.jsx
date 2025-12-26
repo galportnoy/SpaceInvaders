@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback } from 'react';
 import Alien from './Alien.jsx';
 
 const ROWS = 3;
@@ -21,7 +21,7 @@ function createAlienArray() {
     return alienArray;
 }
 
-function AlienFormation({onAliensChange, gameOver = false}) {
+const AlienFormation = forwardRef(function AlienFormation({onAliensChange, gameOver = false}, ref) {
     const [offsetX, setOffsetX] = useState(20);
     const [offsetY, setOffsetY] = useState(5);
     const [alienArray, setAlienArray] = useState(createAlienArray());
@@ -32,7 +32,7 @@ function AlienFormation({onAliensChange, gameOver = false}) {
         gameOverRef.current = gameOver;
     }, [gameOver]);
 
-    const findAliveColumnBounds = () => {
+    const findAliveColumnBounds = useCallback (() => {
         const aliveCols = alienArray
             .filter((alien) => alien.alive)
             .map((alien) => alien.col);
@@ -46,7 +46,7 @@ function AlienFormation({onAliensChange, gameOver = false}) {
             right: Math.max(...aliveCols),
             left: Math.min(...aliveCols),
         };
-    };
+    },[alienArray]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -73,7 +73,7 @@ function AlienFormation({onAliensChange, gameOver = false}) {
         }, MOVEMENT_INTERVAL_MS)
 
         return () => clearInterval(interval);
-    }, []);
+    }, [findAliveColumnBounds]);
 
     useEffect(() => {
         if (onAliensChange) {
@@ -85,6 +85,14 @@ function AlienFormation({onAliensChange, gameOver = false}) {
             onAliensChange(positions);
         }
     }, [offsetX, offsetY, alienArray, onAliensChange]);
+
+    useImperativeHandle(ref, () => ({
+        killAlien: (alienId) => {
+            setAlienArray(prevAliens =>
+                prevAliens.map(alien => alien.id === alienId ? { ...alien, alive: false } : alien)
+            );
+        }
+    }), []);
 
     return (
         <>
@@ -98,6 +106,6 @@ function AlienFormation({onAliensChange, gameOver = false}) {
             ))}
         </>
     );
-}
+});
 
 export default AlienFormation;
