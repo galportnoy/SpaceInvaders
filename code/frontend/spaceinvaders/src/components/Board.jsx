@@ -22,8 +22,7 @@ function Board() {
 
     const [shipX, setShipX] = useState(50);
     const [shots, setShots] = useState([]);
-    const [alienAlive, setAlienAlive] = useState(true);
-    const [alienPos, setAlienPos] = useState({ xPercent: 50, yPercent: 5 });
+    const [aliensPositions, setAliensPositions] = useState([]);
     const [score, setScore] = useState(0);
     const shotIdRef = useRef(0);
 
@@ -33,10 +32,10 @@ function Board() {
 
     const handleStart = () => setGameState(GAME_STATE.PLAYING);
 
-    const handleAlienPositionChange = (pos) => {
+    const handleAliensPositionChange = (positions) => {
         if (gameState !== GAME_STATE.PLAYING) return;
-        setAlienPos(pos);
-        if (pos.yPercent >= SHIP_Y) {
+        setAliensPositions(positions);
+        if (positions?.some(alien => alien.yPercent >= SHIP_Y - 5)) {
             setGameState(GAME_STATE.GAME_OVER);
         }
     };
@@ -44,8 +43,7 @@ function Board() {
     const handlePlayAgain = () => {
         setShipX(50);
         setShots([]);
-        setAlienAlive(true);
-        setAlienPos({ xPercent: 50, yPercent: 5 });
+        setAliensPositions([]);
         setGameKey((prev) => prev + 1);
         setGameState(GAME_STATE.PLAYING);
         setScore(0);
@@ -84,15 +82,16 @@ function Board() {
                 return shot;
             });
         });
-        if (!alienAlive) return;
 
-        const dx = Math.abs(nextPos.xPercent - alienPos.xPercent);
-        const dy = Math.abs(nextPos.yPercent - alienPos.yPercent);
+        for (const alien of aliensPositions) {
+            const dx = Math.abs(nextPos.xPercent - alien.xPercent);
+            const dy = Math.abs(nextPos.yPercent - alien.yPercent);
 
-        if (dx <= HIT_X && dy <= HIT_Y) {
-            setAlienAlive(false);
-            setShots((prev) => prev.filter((s) => s.id !== shotId));
-            setScore((prev) => prev + 100);
+            if (dx <= HIT_X && dy <= HIT_Y) {
+                setShots((prev) => prev.filter((s) => s.id !== shotId));
+                setScore((prev) => prev + 100);
+                break;
+            }
         }
     };
 
@@ -105,6 +104,7 @@ function Board() {
             <div key={gameKey} className="game-content">
                 <AlienFormation
                     gameOver={isGameOver}
+                    onAliensChange={handleAliensPositionChange}
                 />
 
                 <Spaceship onPositionChange={setShipX} />

@@ -21,7 +21,7 @@ function createAlienArray() {
     return alienArray;
 }
 
-function AlienFormation({gameOver = false}) {
+function AlienFormation({onAliensChange, gameOver = false}) {
     const [offsetX, setOffsetX] = useState(20);
     const [offsetY, setOffsetY] = useState(5);
     const [alienArray, setAlienArray] = useState(createAlienArray());
@@ -74,6 +74,17 @@ function AlienFormation({gameOver = false}) {
 
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        if (onAliensChange) {
+            const positions = alienArray.filter(alien => alien.alive).map(alien => ({
+                id: alien.id,
+                xPercent: offsetX + alien.col * SPACE_BETWEEN_ALIENS,
+                yPercent: offsetY + alien.row * SPACE_BETWEEN_ALIENS,
+            }));
+            onAliensChange(positions);
+        }
+    }, [offsetX, offsetY, alienArray, onAliensChange]);
 
     return (
         <>
