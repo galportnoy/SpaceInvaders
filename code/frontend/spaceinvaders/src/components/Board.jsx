@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import './Board.css';
 import Spaceship from '../components/Spaceship.jsx';
 import Projectile from './Projectile.jsx';
-import Alien from '../components/Alien.jsx';
+import AlienFormation from '../components/AlienFormation.jsx';
 import GameOver from './GameOver.jsx';
 import ScoreBar from './ScoreBar.jsx';
 
@@ -103,11 +103,7 @@ function Board() {
     const renderGame = () => {
         return (
             <div key={gameKey} className="game-content">
-                <Alien
-                    alive={alienAlive}
-                    gameOver={isGameOver}
-                    onPositionChange={handleAlienPositionChange}
-                />
+                <AlienFormation/>
 
                 <Spaceship onPositionChange={setShipX} />
 
