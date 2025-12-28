@@ -5,6 +5,7 @@ function GameOver({ score, onPlayAgain }) {
     const [name, setName] = useState('');
     const [isSaved, setIsSaved] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [leaderboard, setLeaderboard] = useState([]);
 
     const handleSaveScore = async () => {
         if (!name.trim()) return;
@@ -16,6 +17,9 @@ function GameOver({ score, onPlayAgain }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: name.trim(), score }),
             });
+            const leaderboardRes = await fetch('/api/leaderboard/');
+            const leaderboardData = await leaderboardRes.json();
+            setLeaderboard(leaderboardData);
             setIsSaved(true);
         } catch (error) {
             console.error('Failed to save score:', error);
@@ -47,7 +51,34 @@ function GameOver({ score, onPlayAgain }) {
                         </button>
                     </div>
                 ) : (
-                    <p className="saved-message">Score saved!</p>
+                    <div className="leaderboard-section">
+                        <p className="saved-message">Score saved!</p>
+                        {leaderboard.length > 0 && (
+                            <>
+                                <h2 className="leaderboard-title">
+                                    Top 5 Leaders
+                                </h2>
+                                <ul className="leaderboard-list">
+                                    {leaderboard.map((entry, index) => (
+                                        <li
+                                            key={index}
+                                            className="leaderboard-item"
+                                        >
+                                            <span className="leaderboard-rank">
+                                                {index + 1}.
+                                            </span>
+                                            <span className="leaderboard-name">
+                                                {entry.name}
+                                            </span>
+                                            <span className="leaderboard-score">
+                                                {entry.score}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
+                        )}
+                    </div>
                 )}
 
                 <button className="play-again-button" onClick={onPlayAgain}>

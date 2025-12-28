@@ -13,7 +13,7 @@
 }
 
 .game-over-title {
-    color: #76ff44;
+    color: #ffffff;
     font-size: 48px;
     margin-bottom: 30px;
     text-transform: uppercase;
@@ -47,7 +47,7 @@
 .name-input {
     padding: 12px 20px;
     font-size: 16px;
-    border: 2px solid #76ff44;
+    border: 2px solid #ffffff;
     border-radius: 8px;
     background-color: transparent;
     color: white;
@@ -62,7 +62,7 @@
 .save-score-button {
     padding: 12px 30px;
     font-size: 16px;
-    background-color: #76ff44;
+    background-color: #ffffff;
     color: black;
     border: none;
     border-radius: 8px;
@@ -81,7 +81,47 @@
 }
 
 .saved-message {
-    color: #76ff44;
+    color: #ffffff;
     font-size: 18px;
     margin-bottom: 20px;
+}
+
+.leaderboard-section {
+    margin-bottom: 20px;
+}
+
+.leaderboard-title {
+    color: #ffffff;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.leaderboard-item {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    color: #ffffff;
+    font-size: 16px;
+    padding: 5px 0;
+}
+
+.leaderboard-rank {
+    width: 25px;
+    text-align: right;
+}
+
+.leaderboard-name {
+    width: 100px;
+    text-align: left;
+}
+
+.leaderboard-score {
+    width: 60px;
+    text-align: right;
 }
