@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './GameOver.css';
+import { saveScore, getLeaderboard } from '../utils/api';
 
 function GameOver({ score, onPlayAgain }) {
     const [name, setName] = useState('');
@@ -12,13 +13,8 @@ function GameOver({ score, onPlayAgain }) {
 
         setIsSaving(true);
         try {
-            await fetch('/api/save-score/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: name.trim(), score }),
-            });
-            const leaderboardRes = await fetch('/api/leaderboard/');
-            const leaderboardData = await leaderboardRes.json();
+            await saveScore(name.trim(), score);
+            const leaderboardData = await getLeaderboard();
             setLeaderboard(leaderboardData);
             setIsSaved(true);
         } catch (error) {
