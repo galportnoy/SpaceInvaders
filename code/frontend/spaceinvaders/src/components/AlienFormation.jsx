@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback } from 'react';
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import Alien from './Alien.jsx';
 
-const ROWS = 3;
-const COLS = 5;
+const ROWS = 5;
+const COLS = 10;
 const SPACE_BETWEEN_ALIENS = 6;
 const MOVE_SPEED = 2;
 const STEP_DOWN = 5;
@@ -27,26 +27,22 @@ const AlienFormation = forwardRef(function AlienFormation({onAliensChange, gameO
     const [alienArray, setAlienArray] = useState(createAlienArray());
     const direction = useRef(1); // right = 1 left = -1
     const gameOverRef = useRef(gameOver);
+    const alienArrayRef = useRef(alienArray);
 
     useEffect(() => {
         gameOverRef.current = gameOver;
     }, [gameOver]);
 
-    const findAliveColumnBounds = useCallback (() => {
-        const aliveCols = alienArray
-            .filter((alien) => alien.alive)
-            .map((alien) => alien.col);
-        if (aliveCols.length === 0) {
-            return {
-                right: 0,
-                left: 0,
-            };
-        }
-        return {
-            right: Math.max(...aliveCols),
-            left: Math.min(...aliveCols),
-        };
-    },[alienArray]);
+    useEffect(() => {
+        alienArrayRef.current = alienArray
+    }, [alienArray]);
+    
+    const respawnFormation = () =>{
+        setOffsetX(20);
+        setOffsetY(5);
+        direction.current = 1;
+        setAlienArray(createAlienArray());
+    }
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -55,11 +51,20 @@ const AlienFormation = forwardRef(function AlienFormation({onAliensChange, gameO
                 return;
             }
 
+            const aliveCols = alienArrayRef.current.filter((alien) => alien.alive).map((alien) => alien.col);
+
+            if (aliveCols.length === 0) {
+                respawnFormation();
+                return;
+            }
+
+            const boundRight = Math.max(...aliveCols);
+            const boundLeft = Math.min(...aliveCols);
+
             setOffsetX((prevX) =>{
-                const bounds = findAliveColumnBounds();
                 const nextX = prevX + (direction.current * MOVE_SPEED);
-                const rightEdge = nextX + bounds.right * SPACE_BETWEEN_ALIENS;
-                const leftEdge = nextX + bounds.left * SPACE_BETWEEN_ALIENS;
+                const rightEdge = nextX + boundRight * SPACE_BETWEEN_ALIENS;
+                const leftEdge = nextX + boundLeft * SPACE_BETWEEN_ALIENS;
                 const hitBorder = rightEdge >= RIGHT_BORDER || leftEdge <= LEFT_BORDER;
 
                 if(hitBorder) {
@@ -73,7 +78,7 @@ const AlienFormation = forwardRef(function AlienFormation({onAliensChange, gameO
         }, MOVEMENT_INTERVAL_MS)
 
         return () => clearInterval(interval);
-    }, [findAliveColumnBounds]);
+    }, []);
 
     useEffect(() => {
         if (onAliensChange) {
