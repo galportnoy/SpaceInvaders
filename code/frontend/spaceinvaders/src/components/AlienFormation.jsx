@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import {
+    useEffect,
+    useRef,
+    useState,
+    forwardRef,
+    useImperativeHandle,
+} from 'react';
 import Alien from './Alien.jsx';
 
 const ROWS = 5;
@@ -21,7 +27,10 @@ function createAlienArray() {
     return alienArray;
 }
 
-const AlienFormation = forwardRef(function AlienFormation({onAliensChange, gameOver = false}, ref) {
+const AlienFormation = forwardRef(function AlienFormation(
+    { onAliensChange, gameOver = false },
+    ref
+) {
     const [offsetX, setOffsetX] = useState(20);
     const [offsetY, setOffsetY] = useState(5);
     const [alienArray, setAlienArray] = useState(createAlienArray());
@@ -34,15 +43,15 @@ const AlienFormation = forwardRef(function AlienFormation({onAliensChange, gameO
     }, [gameOver]);
 
     useEffect(() => {
-        alienArrayRef.current = alienArray
+        alienArrayRef.current = alienArray;
     }, [alienArray]);
-    
-    const respawnFormation = () =>{
+
+    const respawnFormation = () => {
         setOffsetX(20);
         setOffsetY(5);
         direction.current = 1;
         setAlienArray(createAlienArray());
-    }
+    };
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -51,7 +60,9 @@ const AlienFormation = forwardRef(function AlienFormation({onAliensChange, gameO
                 return;
             }
 
-            const aliveCols = alienArrayRef.current.filter((alien) => alien.alive).map((alien) => alien.col);
+            const aliveCols = alienArrayRef.current
+                .filter((alien) => alien.alive)
+                .map((alien) => alien.col);
 
             if (aliveCols.length === 0) {
                 respawnFormation();
@@ -61,43 +72,54 @@ const AlienFormation = forwardRef(function AlienFormation({onAliensChange, gameO
             const boundRight = Math.max(...aliveCols);
             const boundLeft = Math.min(...aliveCols);
 
-            setOffsetX((prevX) =>{
-                const nextX = prevX + (direction.current * MOVE_SPEED);
+            setOffsetX((prevX) => {
+                const nextX = prevX + direction.current * MOVE_SPEED;
                 const rightEdge = nextX + boundRight * SPACE_BETWEEN_ALIENS;
                 const leftEdge = nextX + boundLeft * SPACE_BETWEEN_ALIENS;
-                const hitBorder = rightEdge >= RIGHT_BORDER || leftEdge <= LEFT_BORDER;
+                const hitBorder =
+                    rightEdge >= RIGHT_BORDER || leftEdge <= LEFT_BORDER;
 
-                if(hitBorder) {
+                if (hitBorder) {
                     direction.current *= -1;
-                    setOffsetY(prevY => prevY + STEP_DOWN);
+                    setOffsetY((prevY) => prevY + STEP_DOWN);
                     return prevX;
                 }
 
                 return nextX;
             });
-        }, MOVEMENT_INTERVAL_MS)
+        }, MOVEMENT_INTERVAL_MS);
 
         return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
         if (onAliensChange) {
-            const positions = alienArray.filter(alien => alien.alive).map(alien => ({
-                id: alien.id,
-                xPercent: offsetX + alien.col * SPACE_BETWEEN_ALIENS,
-                yPercent: offsetY + alien.row * SPACE_BETWEEN_ALIENS,
-            }));
+            const positions = alienArray
+                .filter((alien) => alien.alive)
+                .map((alien) => ({
+                    id: alien.id,
+                    xPercent: offsetX + alien.col * SPACE_BETWEEN_ALIENS,
+                    yPercent: offsetY + alien.row * SPACE_BETWEEN_ALIENS,
+                }));
             onAliensChange(positions);
         }
     }, [offsetX, offsetY, alienArray, onAliensChange]);
 
-    useImperativeHandle(ref, () => ({
-        killAlien: (alienId) => {
-            setAlienArray(prevAliens =>
-                prevAliens.map(alien => alien.id === alienId ? { ...alien, alive: false } : alien)
-            );
-        }
-    }), []);
+    useImperativeHandle(
+        ref,
+        () => ({
+            killAlien: (alienId) => {
+                setAlienArray((prevAliens) =>
+                    prevAliens.map((alien) =>
+                        alien.id === alienId
+                            ? { ...alien, alive: false }
+                            : alien
+                    )
+                );
+            },
+        }),
+        []
+    );
 
     return (
         <>
