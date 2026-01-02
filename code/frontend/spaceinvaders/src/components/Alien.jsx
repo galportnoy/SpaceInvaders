@@ -2,7 +2,7 @@ import thirdAlienImg from '../assets/basic_alien.png';
 import secondAlienImg from '../assets/space_squid.png';
 import firstAlienImg from '../assets/silly_alien.png';
 import './Alien.css';
-import {ALIEN_TYPES} from '../constants/alienTypes.js';
+import { ALIEN_TYPES } from '../constants/alienTypes.js';
 
 function Alien({ XPosition, YPosition, type, alive = true }) {
     const dynamicStyle = {

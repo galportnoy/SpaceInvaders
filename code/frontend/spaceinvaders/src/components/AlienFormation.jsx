@@ -6,7 +6,7 @@ import {
     useImperativeHandle,
 } from 'react';
 import Alien from './Alien.jsx';
-import {ALIEN_TYPES} from '../constants/alienTypes.js';
+import { ALIEN_TYPES } from '../constants/alienTypes.js';
 
 const ROWS = 5;
 const COLS = 10;
