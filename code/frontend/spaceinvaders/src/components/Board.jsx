@@ -5,6 +5,7 @@ import Projectile from './Projectile.jsx';
 import AlienFormation from '../components/AlienFormation.jsx';
 import GameOver from './GameOver.jsx';
 import ScoreBar from './ScoreBar.jsx';
+import { ALIEN_TYPES } from '../constants/alienTypes.js';
 
 const SHIP_Y = 90;
 const HIT_X = 2;
@@ -14,6 +15,12 @@ const GAME_STATE = {
     IDLE: 'idle',
     PLAYING: 'playing',
     GAME_OVER: 'gameOver',
+};
+
+const SCORE_PER_TYPE_MAP = {
+    [ALIEN_TYPES.FIRST]: 200,
+    [ALIEN_TYPES.SECOND]: 100,
+    [ALIEN_TYPES.THIRD]: 50,
 };
 
 function Board() {
@@ -36,7 +43,7 @@ function Board() {
     const handleAliensPositionChange = (positions) => {
         if (gameState !== GAME_STATE.PLAYING) return;
         setAliensPositions(positions);
-        if (positions?.some(alien => alien.yPercent >= SHIP_Y - 5)) {
+        if (positions?.some((alien) => alien.yPercent >= SHIP_Y - 5)) {
             setGameState(GAME_STATE.GAME_OVER);
         }
     };
@@ -89,9 +96,9 @@ function Board() {
             const dy = Math.abs(nextPos.yPercent - alien.yPercent);
 
             if (dx <= HIT_X && dy <= HIT_Y) {
-                formationRef.current?.killAlien(alien.id)
+                formationRef.current?.killAlien(alien.id);
                 setShots((prev) => prev.filter((s) => s.id !== shotId));
-                setScore((prev) => prev + 100);
+                setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
                 break;
             }
         }

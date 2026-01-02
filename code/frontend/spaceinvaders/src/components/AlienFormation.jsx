@@ -6,6 +6,7 @@ import {
     useImperativeHandle,
 } from 'react';
 import Alien from './Alien.jsx';
+import { ALIEN_TYPES } from '../constants/alienTypes.js';
 
 const ROWS = 5;
 const COLS = 10;
@@ -19,9 +20,13 @@ const MOVEMENT_INTERVAL_MS = 100;
 function createAlienArray() {
     const alienArray = [];
     let id = 0;
+    let type = ALIEN_TYPES.FIRST;
     for (let row = 0; row < ROWS; row++) {
+        if (row % 2 === 1) {
+            type += 1;
+        }
         for (let col = 0; col < COLS; col++) {
-            alienArray.push({ id: id++, row, col, alive: true });
+            alienArray.push({ id: id++, row, col, type, alive: true });
         }
     }
     return alienArray;
@@ -98,6 +103,7 @@ const AlienFormation = forwardRef(function AlienFormation(
                 .filter((alien) => alien.alive)
                 .map((alien) => ({
                     id: alien.id,
+                    type: alien.type,
                     xPercent: offsetX + alien.col * SPACE_BETWEEN_ALIENS,
                     yPercent: offsetY + alien.row * SPACE_BETWEEN_ALIENS,
                 }));
@@ -128,6 +134,7 @@ const AlienFormation = forwardRef(function AlienFormation(
                     key={alien.id}
                     XPosition={offsetX + alien.col * SPACE_BETWEEN_ALIENS}
                     YPosition={offsetY + alien.row * SPACE_BETWEEN_ALIENS}
+                    type={alien.type}
                     alive={alien.alive}
                 />
             ))}
