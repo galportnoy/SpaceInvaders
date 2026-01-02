@@ -5,6 +5,7 @@ import Projectile from './Projectile.jsx';
 import AlienFormation from '../components/AlienFormation.jsx';
 import GameOver from './GameOver.jsx';
 import ScoreBar from './ScoreBar.jsx';
+import {ALIEN_TYPES} from '../constants/alienTypes.js';
 
 const SHIP_Y = 90;
 const HIT_X = 2;
@@ -16,7 +17,7 @@ const GAME_STATE = {
     GAME_OVER: 'gameOver',
 };
 
-const SCORE_PER_TYPE_MAP = { 1: 200, 2: 100, 3: 50 };
+const SCORE_PER_TYPE_MAP = { [ALIEN_TYPES.FIRST]: 200, [ALIEN_TYPES.SECOND]: 100, [ALIEN_TYPES.THIRD]: 50 };
 
 function Board() {
     const [gameState, setGameState] = useState(GAME_STATE.IDLE);
