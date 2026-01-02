@@ -1,7 +1,9 @@
-import alienImg from '../assets/space_squid.png';
+import thirdAlienImg from '../assets/basic_alien.png';
+import secondAlienImg from '../assets/space_squid.png';
+import firstAlienImg from '../assets/silly_alien.png';
 import './Alien.css';
 
-function Alien({ XPosition, YPosition, alive = true}) {
+function Alien({ XPosition, YPosition, type, alive = true }) {
     const dynamicStyle = {
         '--alien-position-x': `${XPosition}%`,
         '--alien-position-y': `${YPosition}%`,
@@ -9,9 +11,20 @@ function Alien({ XPosition, YPosition, alive = true}) {
 
     if (!alive) return null;
 
+    const alienType = () => {
+        switch (type) {
+            case 1:
+                return firstAlienImg;
+            case 2:
+                return secondAlienImg;
+            case 3:
+                return thirdAlienImg;
+        }
+    };
+
     return (
         <div className="alien-container" style={dynamicStyle}>
-            <img src={alienImg} alt="alien" />
+            <img src={alienType()} alt="alien" />
         </div>
     );
 }

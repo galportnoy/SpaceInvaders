@@ -16,6 +16,8 @@ const GAME_STATE = {
     GAME_OVER: 'gameOver',
 };
 
+const SCORE_PER_TYPE_MAP = { 1: 200, 2: 100, 3: 50 };
+
 function Board() {
     const [gameState, setGameState] = useState(GAME_STATE.IDLE);
     const [gameKey, setGameKey] = useState(0);
@@ -36,7 +38,7 @@ function Board() {
     const handleAliensPositionChange = (positions) => {
         if (gameState !== GAME_STATE.PLAYING) return;
         setAliensPositions(positions);
-        if (positions?.some(alien => alien.yPercent >= SHIP_Y - 5)) {
+        if (positions?.some((alien) => alien.yPercent >= SHIP_Y - 5)) {
             setGameState(GAME_STATE.GAME_OVER);
         }
     };
@@ -89,9 +91,9 @@ function Board() {
             const dy = Math.abs(nextPos.yPercent - alien.yPercent);
 
             if (dx <= HIT_X && dy <= HIT_Y) {
-                formationRef.current?.killAlien(alien.id)
+                formationRef.current?.killAlien(alien.id);
                 setShots((prev) => prev.filter((s) => s.id !== shotId));
-                setScore((prev) => prev + 100);
+                setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
                 break;
             }
         }
