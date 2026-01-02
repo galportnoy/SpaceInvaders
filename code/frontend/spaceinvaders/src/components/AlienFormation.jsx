@@ -6,6 +6,7 @@ import {
     useImperativeHandle,
 } from 'react';
 import Alien from './Alien.jsx';
+import {ALIEN_TYPES} from '../constants/alienTypes.js';
 
 const ROWS = 5;
 const COLS = 10;
@@ -15,12 +16,6 @@ const STEP_DOWN = 5;
 const RIGHT_BORDER = 95;
 const LEFT_BORDER = 5;
 const MOVEMENT_INTERVAL_MS = 100;
-
-const ALIEN_TYPES = {
-    FIRST: 1,
-    SECOND: 2,
-    THIRD: 3,
-};
 
 function createAlienArray() {
     const alienArray = [];

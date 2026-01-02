@@ -2,6 +2,7 @@ import thirdAlienImg from '../assets/basic_alien.png';
 import secondAlienImg from '../assets/space_squid.png';
 import firstAlienImg from '../assets/silly_alien.png';
 import './Alien.css';
+import {ALIEN_TYPES} from '../constants/alienTypes.js';
 
 function Alien({ XPosition, YPosition, type, alive = true }) {
     const dynamicStyle = {
@@ -13,11 +14,11 @@ function Alien({ XPosition, YPosition, type, alive = true }) {
 
     const alienType = () => {
         switch (type) {
-            case 1:
+            case ALIEN_TYPES.FIRST:
                 return firstAlienImg;
-            case 2:
+            case ALIEN_TYPES.SECOND:
                 return secondAlienImg;
-            case 3:
+            case ALIEN_TYPES.THIRD:
                 return thirdAlienImg;
         }
     };
