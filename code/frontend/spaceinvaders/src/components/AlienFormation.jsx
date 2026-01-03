@@ -28,7 +28,7 @@ function createAlienArray() {
 }
 
 const AlienFormation = forwardRef(function AlienFormation(
-    { onAliensChange, gameOver = false },
+    { onAliensChange, gameOver = false, paused = false },
     ref
 ) {
     const [offsetX, setOffsetX] = useState(20);
@@ -37,6 +37,12 @@ const AlienFormation = forwardRef(function AlienFormation(
     const direction = useRef(1); // right = 1 left = -1
     const gameOverRef = useRef(gameOver);
     const alienArrayRef = useRef(alienArray);
+
+    const pausedRef = useRef(paused);
+
+    useEffect(() => {
+        pausedRef.current = paused;
+    }, [paused]);
 
     useEffect(() => {
         gameOverRef.current = gameOver;
@@ -59,6 +65,7 @@ const AlienFormation = forwardRef(function AlienFormation(
                 clearInterval(interval);
                 return;
             }
+            if (pausedRef.current) return;
 
             const aliveCols = alienArrayRef.current
                 .filter((alien) => alien.alive)

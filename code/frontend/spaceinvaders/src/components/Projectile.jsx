@@ -4,7 +4,7 @@ import './Projectile.css';
 const SHOT_SPEED = 2;
 const PROJECTILE_INTERVAL_MS = 30;
 
-function Projectile({ startX, startY, onMove, onDone }) {
+function Projectile({ startX, startY, onMove, onDone, paused = false }) {
     const [pos, setPos] = useState({
         xPercent: startX,
         yPercent: startY,
@@ -13,6 +13,12 @@ function Projectile({ startX, startY, onMove, onDone }) {
     const onMoveRef = useRef(onMove);
     const onDoneRef = useRef(onDone);
 
+    const pausedRef = useRef(paused);
+
+    useEffect(() => {
+        pausedRef.current = paused;
+    }, [paused]);
+
     useEffect(() => {
         onMoveRef.current = onMove;
         onDoneRef.current = onDone;
@@ -20,6 +26,8 @@ function Projectile({ startX, startY, onMove, onDone }) {
 
     useEffect(() => {
         const interval = setInterval(() => {
+            if (pausedRef.current) return;
+
             setPos((prev) => {
                 const nextY = prev.yPercent - SHOT_SPEED;
 
