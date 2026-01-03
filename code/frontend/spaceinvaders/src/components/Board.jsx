@@ -37,9 +37,13 @@ function Board() {
     const isPlaying = gameState === GAME_STATE.PLAYING;
     const isGameOver = gameState === GAME_STATE.GAME_OVER;
     const isIdle = gameState === GAME_STATE.IDLE;
+    const [paused, setPaused] = useState(false);
+    const PAUSE_KEY_CODE = 'KeyP';
 
-    const handleStart = () => setGameState(GAME_STATE.PLAYING);
-
+    const handleStart = () => {
+        setPaused(false);
+        setGameState(GAME_STATE.PLAYING);
+    };
     const handleAliensPositionChange = (positions) => {
         if (gameState !== GAME_STATE.PLAYING) return;
         setAliensPositions(positions);
@@ -51,14 +55,29 @@ function Board() {
     const handlePlayAgain = () => {
         setShipX(50);
         setShots([]);
+        setPaused(false);
         setAliensPositions([]);
         setGameKey((prev) => prev + 1);
         setGameState(GAME_STATE.PLAYING);
         setScore(0);
     };
+    const togglePause = () => {
+        setPaused((prev) => !prev);
+    };
+
+    useEffect(() => {
+        const onKeyDown = (e) => {
+            if (!isPlaying) return;
+            if (e.code !== PAUSE_KEY_CODE) return;
+            togglePause();
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [isPlaying]);
 
     useEffect(() => {
         if (!isPlaying) return;
+        if (paused) return;
 
         const onKeyDown = (e) => {
             e.preventDefault();
@@ -75,7 +94,7 @@ function Board() {
         };
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [isPlaying, shipX]);
+    }, [isPlaying, paused, shipX]);
 
     const handleShotMove = (shotId, nextPos) => {
         setShots((prevShots) => {
@@ -114,16 +133,16 @@ function Board() {
                 <AlienFormation
                     ref={formationRef}
                     gameOver={isGameOver}
+                    paused={paused}
                     onAliensChange={handleAliensPositionChange}
                 />
-
-                <Spaceship onPositionChange={setShipX} />
-
+                <Spaceship onPositionChange={setShipX} paused={paused} />
                 {shots.map((s) => (
                     <Projectile
                         key={s.id}
                         startX={s.xPercent}
                         startY={s.yPercent}
+                        paused={paused}
                         onMove={(nextPos) => handleShotMove(s.id, nextPos)}
                         onDone={() => handleProjectileDone(s.id)}
                     />
@@ -139,6 +158,12 @@ function Board() {
     return (
         <div className="game-wrapper">
             <ScoreBar score={score} />
+
+            {isPlaying && !isGameOver && (
+                <button onClick={togglePause}>
+                    {paused ? 'Resume' : 'Pause'}
+                </button>
+            )}
 
             <div className="board">
                 {isIdle && (

@@ -7,9 +7,15 @@ const RIGHT_ARROW = 'ArrowRight';
 const MOVE_SPEED = 1;
 const MOVEMENT_INTERVAL_MS = 16;
 
-function Spaceship({ onPositionChange }) {
+function Spaceship({ onPositionChange, paused = false }) {
     const [position, setPosition] = useState(50);
     const keysPressed = useRef(new Set());
+
+    const pausedRef = useRef(paused);
+
+    useEffect(() => {
+        pausedRef.current = paused;
+    }, [paused]);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -24,6 +30,8 @@ function Spaceship({ onPositionChange }) {
         window.addEventListener('keyup', handleKeyUp);
 
         const interval = setInterval(() => {
+            if (pausedRef.current) return;
+
             setPosition((prev) => {
                 let delta = 0;
                 if (keysPressed.current.has(LEFT_ARROW)) {
