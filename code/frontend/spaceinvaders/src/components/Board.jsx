@@ -31,6 +31,7 @@ function Board() {
     const isGameOver = gameState === GAME_STATE.GAME_OVER;
     const isIdle = gameState === GAME_STATE.IDLE;
     const [paused, setPaused] = useState(false);
+    const PAUSE_KEY_CODE = 'KeyP';
 
     const handleStart = () => {
         setPaused(false);
@@ -53,12 +54,15 @@ function Board() {
         setGameState(GAME_STATE.PLAYING);
         setScore(0);
     };
+    const togglePause = () => {
+        setPaused((prev) => !prev);
+    };
 
     useEffect(() => {
         const onKeyDown = (e) => {
             if (!isPlaying) return;
-            if (e.code !== 'KeyP') return;
-            setPaused((p) => !p);
+            if (e.code !== PAUSE_KEY_CODE) return;
+            togglePause();
         };
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
@@ -114,10 +118,6 @@ function Board() {
 
     const handleProjectileDone = (shotId) => {
         setShots((prev) => prev.filter((s) => s.id !== shotId));
-    };
-
-    const togglePause = () => {
-        setPaused(!paused);
     };
 
     const renderGame = () => {
