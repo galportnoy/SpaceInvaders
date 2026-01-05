@@ -42,6 +42,7 @@ const AlienFormation = forwardRef(function AlienFormation(
     const direction = useRef(1); // right = 1 left = -1
     const gameOverRef = useRef(gameOver);
     const alienArrayRef = useRef(alienArray);
+    const difficultySpeedRef = useRef(0);
 
     const pausedRef = useRef(paused);
 
@@ -62,6 +63,7 @@ const AlienFormation = forwardRef(function AlienFormation(
         setOffsetY(5);
         direction.current = 1;
         setAlienArray(createAlienArray());
+        difficultySpeedRef.current += 0.5;
     };
 
     useEffect(() => {
@@ -85,7 +87,7 @@ const AlienFormation = forwardRef(function AlienFormation(
             const boundLeft = Math.min(...aliveCols);
 
             setOffsetX((prevX) => {
-                const nextX = prevX + direction.current * MOVE_SPEED;
+                const nextX = prevX + direction.current * (MOVE_SPEED + difficultySpeedRef.current);
                 const rightEdge = nextX + boundRight * SPACE_BETWEEN_ALIENS;
                 const leftEdge = nextX + boundLeft * SPACE_BETWEEN_ALIENS;
                 const hitBorder =
