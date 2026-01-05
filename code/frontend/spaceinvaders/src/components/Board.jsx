@@ -157,13 +157,15 @@ function Board() {
 
     return (
         <div className="game-wrapper">
-            <ScoreBar score={score} />
+            <div className="hud">
+                <ScoreBar score={score} />
 
-            {isPlaying && !isGameOver && (
-                <button onClick={togglePause}>
-                    {paused ? 'Resume' : 'Pause'}
-                </button>
-            )}
+                {isPlaying && !isGameOver && (
+                    <button className="pause-button" onClick={togglePause}>
+                        {paused ? 'Resume' : 'Pause'}
+                    </button>
+                )}
+            </div>
 
             <div className="board">
                 {isIdle && (
