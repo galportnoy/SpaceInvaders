@@ -25,4 +25,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path(f'{api_prefix}leaderboard/', views.get_leaderboard, name='get_leaderboard'),
     path(f'{api_prefix}save-score/', views.save_score, name='save_score'),
+    path(f'{api_prefix}quiz/', views.get_quiz_question, name='get_quiz_question'),
 ]

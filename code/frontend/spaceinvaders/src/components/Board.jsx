@@ -5,6 +5,7 @@ import Projectile from './Projectile.jsx';
 import AlienFormation from '../components/AlienFormation.jsx';
 import GameOver from './GameOver.jsx';
 import ScoreBar from './ScoreBar.jsx';
+import Quiz from './Quiz.jsx';
 import { ALIEN_TYPES } from '../constants/alienTypes.js';
 
 const SHIP_Y = 90;
@@ -38,6 +39,7 @@ function Board() {
     const isGameOver = gameState === GAME_STATE.GAME_OVER;
     const isIdle = gameState === GAME_STATE.IDLE;
     const [paused, setPaused] = useState(false);
+    const [showQuiz, setShowQuiz] = useState(false);
     const PAUSE_KEY_CODE = 'KeyP';
 
     const handleStart = () => {
@@ -56,6 +58,7 @@ function Board() {
         setShipX(50);
         setShots([]);
         setPaused(false);
+        setShowQuiz(false);
         setAliensPositions([]);
         setGameKey((prev) => prev + 1);
         setGameState(GAME_STATE.PLAYING);
@@ -63,6 +66,16 @@ function Board() {
     };
     const togglePause = () => {
         setPaused((prev) => !prev);
+    };
+
+    const handleWaveComplete = () => {
+        setPaused(true);
+        setShowQuiz(true);
+    };
+
+    const handleQuizComplete = () => {
+        setShowQuiz(false);
+        setPaused(false);
     };
 
     useEffect(() => {
@@ -133,16 +146,20 @@ function Board() {
                 <AlienFormation
                     ref={formationRef}
                     gameOver={isGameOver}
-                    paused={paused}
+                    paused={paused || showQuiz}
                     onAliensChange={handleAliensPositionChange}
+                    onWaveComplete={handleWaveComplete}
                 />
-                <Spaceship onPositionChange={setShipX} paused={paused} />
+                <Spaceship
+                    onPositionChange={setShipX}
+                    paused={paused || showQuiz}
+                />
                 {shots.map((s) => (
                     <Projectile
                         key={s.id}
                         startX={s.xPercent}
                         startY={s.yPercent}
-                        paused={paused}
+                        paused={paused || showQuiz}
                         onMove={(nextPos) => handleShotMove(s.id, nextPos)}
                         onDone={() => handleProjectileDone(s.id)}
                     />
@@ -151,6 +168,8 @@ function Board() {
                 {isGameOver && (
                     <GameOver score={score} onPlayAgain={handlePlayAgain} />
                 )}
+
+                {showQuiz && <Quiz onComplete={handleQuizComplete} />}
             </div>
         );
     };
