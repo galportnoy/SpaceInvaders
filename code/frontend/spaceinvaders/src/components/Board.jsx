@@ -40,6 +40,7 @@ function Board() {
     const isIdle = gameState === GAME_STATE.IDLE;
     const [paused, setPaused] = useState(false);
     const [showQuiz, setShowQuiz] = useState(false);
+    const [megaUsed, setMegaUsed] = useState(false);
     const PAUSE_KEY_CODE = 'KeyP';
     const MEGA_KEY = 'KeyZ';
     const SPACE = 'Space';
@@ -79,6 +80,8 @@ function Board() {
     const handleWaveComplete = () => {
         setPaused(true);
         setShowQuiz(true);
+        setMegaUsed(false);
+        setShots([]);
     };
 
     const handleQuizComplete = () => {
@@ -188,10 +191,6 @@ function Board() {
 
     const handleProjectileDone = (shotId) => {
         setShots((prev) => prev.filter((s) => s.id !== shotId));
-    };
-    const handleRoundStart = () => {
-        setMegaUsed(false);
-        setShots([]);
     };
 
     const renderGame = () => {

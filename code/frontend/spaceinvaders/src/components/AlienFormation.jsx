@@ -64,7 +64,7 @@ const AlienFormation = forwardRef(function AlienFormation(
         direction.current = 1;
         setAlienArray(createAlienArray());
         difficultySpeedRef.current += 0.5;
-        if (onRoundStart) onRoundStart();
+        if (onWaveComplete) onWaveComplete();
     };
 
     useEffect(() => {
@@ -80,7 +80,6 @@ const AlienFormation = forwardRef(function AlienFormation(
                 .map((alien) => alien.col);
 
             if (aliveCols.length === 0) {
-                if (onWaveComplete) onWaveComplete();
                 respawnFormation();
                 return;
             }
