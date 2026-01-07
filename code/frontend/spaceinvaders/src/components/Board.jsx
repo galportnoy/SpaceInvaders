@@ -40,7 +40,15 @@ function Board() {
     const isIdle = gameState === GAME_STATE.IDLE;
     const [paused, setPaused] = useState(false);
     const [showQuiz, setShowQuiz] = useState(false);
+    const [megaUsed, setMegaUsed] = useState(false);
     const PAUSE_KEY_CODE = 'KeyP';
+    const MEGA_KEY = 'KeyZ';
+    const SPACE = 'Space';
+    const DEFAULT_SHOT = 'DEFAULT';
+
+    const SHOT_TYPES = {
+        MEGA: 'MEGA',
+    };
 
     const handleStart = () => {
         setPaused(false);
@@ -63,6 +71,7 @@ function Board() {
         setGameKey((prev) => prev + 1);
         setGameState(GAME_STATE.PLAYING);
         setScore(0);
+        setMegaUsed(false);
     };
     const togglePause = () => {
         setPaused((prev) => !prev);
@@ -71,6 +80,8 @@ function Board() {
     const handleWaveComplete = () => {
         setPaused(true);
         setShowQuiz(true);
+        setMegaUsed(false);
+        setShots([]);
     };
 
     const handleQuizComplete = () => {
@@ -81,6 +92,7 @@ function Board() {
     useEffect(() => {
         const onKeyDown = (e) => {
             if (!isPlaying) return;
+            if (e.repeat) return;
             if (e.code !== PAUSE_KEY_CODE) return;
             togglePause();
         };
@@ -88,14 +100,42 @@ function Board() {
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [isPlaying]);
 
+    const shotHitHandlers = {
+        DEFAULT: ({ alien }) => {
+            formationRef.current?.killAlien(alien.id);
+            setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
+            return { removeShot: true };
+        },
+
+        [SHOT_TYPES.MEGA]: ({ alien }) => {
+            formationRef.current?.killAlien(alien.id);
+            setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
+            return { removeShot: false };
+        },
+    };
+
+    const applyShotOnHit = ({ shot, alien }) => {
+        const type = shot.powerType || DEFAULT_SHOT;
+        const handler = shotHitHandlers[type] || shotHitHandlers[DEFAULT_SHOT];
+        return handler({ shot, alien });
+    };
+
     useEffect(() => {
         if (!isPlaying) return;
         if (paused) return;
 
         const onKeyDown = (e) => {
-            e.preventDefault();
-            if (e.key !== ' ') return;
             if (e.repeat) return;
+            const isSpace = e.code === SPACE;
+            const isMega = e.code === MEGA_KEY;
+
+            if (!isSpace && !isMega) return;
+            e.preventDefault();
+
+            if (isMega) {
+                if (megaUsed) return;
+                setMegaUsed(true);
+            }
 
             const newShot = {
                 id: shotIdRef.current++,
@@ -103,15 +143,22 @@ function Board() {
                 yPercent: SHIP_Y,
             };
 
+            if (isMega) {
+                newShot.powerType = SHOT_TYPES.MEGA;
+            }
+
             setShots((prev) => [...prev, newShot]);
         };
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [isPlaying, paused, shipX]);
+    }, [isPlaying, paused, shipX, megaUsed, SHOT_TYPES.MEGA]);
 
     const handleShotMove = (shotId, nextPos) => {
         setShots((prevShots) => {
-            return prevShots.map((shot) => {
+            const currentShot = prevShots.find((s) => s.id === shotId);
+            if (!currentShot) return prevShots;
+
+            let nextShots = prevShots.map((shot) => {
                 if (shot.id === shotId) {
                     return {
                         ...shot,
@@ -121,19 +168,25 @@ function Board() {
                 }
                 return shot;
             });
-        });
 
-        for (const alien of aliensPositions) {
-            const dx = Math.abs(nextPos.xPercent - alien.xPercent);
-            const dy = Math.abs(nextPos.yPercent - alien.yPercent);
+            for (const alien of aliensPositions) {
+                const dx = Math.abs(nextPos.xPercent - alien.xPercent);
+                const dy = Math.abs(nextPos.yPercent - alien.yPercent);
 
-            if (dx <= HIT_X && dy <= HIT_Y) {
-                formationRef.current?.killAlien(alien.id);
-                setShots((prev) => prev.filter((s) => s.id !== shotId));
-                setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
-                break;
+                if (dx <= HIT_X && dy <= HIT_Y) {
+                    const { removeShot } = applyShotOnHit({
+                        shot: currentShot,
+                        alien,
+                    });
+
+                    if (removeShot) {
+                        nextShots = nextShots.filter((s) => s.id !== shotId);
+                    }
+                    break;
+                }
             }
-        }
+            return nextShots;
+        });
     };
 
     const handleProjectileDone = (shotId) => {
