@@ -33,7 +33,7 @@ function createAlienArray() {
 }
 
 const AlienFormation = forwardRef(function AlienFormation(
-    { onAliensChange, gameOver = false, paused = false, onRoundStart },
+    { onAliensChange, onWaveComplete, gameOver = false, paused = false },
     ref
 ) {
     const [offsetX, setOffsetX] = useState(20);
@@ -80,6 +80,7 @@ const AlienFormation = forwardRef(function AlienFormation(
                 .map((alien) => alien.col);
 
             if (aliveCols.length === 0) {
+                if (onWaveComplete) onWaveComplete();
                 respawnFormation();
                 return;
             }
