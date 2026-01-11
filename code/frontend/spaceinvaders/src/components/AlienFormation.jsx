@@ -93,7 +93,7 @@ const AlienFormation = forwardRef(function AlienFormation(
             setOffsetX((prevX) => {
                 const currentSpeed = slowedRef.current
                     ? SLOW_SPEED
-                    : MOVE_SPEED + difficultySpeedRef;
+                    : MOVE_SPEED + difficultySpeedRef.current;
                 const nextX = prevX + direction.current * currentSpeed;
                 const rightEdge = nextX + boundRight * SPACE_BETWEEN_ALIENS;
                 const leftEdge = nextX + boundLeft * SPACE_BETWEEN_ALIENS;
