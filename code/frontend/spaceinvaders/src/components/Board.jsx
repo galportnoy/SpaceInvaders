@@ -41,13 +41,22 @@ function Board() {
     const [paused, setPaused] = useState(false);
     const [showQuiz, setShowQuiz] = useState(false);
     const [megaUsed, setMegaUsed] = useState(false);
+    const [machineGunActive, setMachineGunActive] = useState(false);
+    const machineGunIntervalRef = useRef(null);
+    const spaceHeldRef = useRef(false);
+    const shipXRef = useRef(shipX);
+    const machineGunActiveRef = useRef(machineGunActive);
+    const megaUsedRef = useRef(megaUsed);
     const PAUSE_KEY_CODE = 'KeyP';
     const MEGA_KEY = 'KeyZ';
+    const MACHINE_GUN_KEY = 'KeyM';
     const SPACE = 'Space';
     const DEFAULT_SHOT = 'DEFAULT';
+    const MACHINE_GUN_FIRE_RATE_MS = 100; // Fire every 100ms when machine gun is active
 
     const SHOT_TYPES = {
         MEGA: 'MEGA',
+        MACHINE_GUN: 'MACHINE_GUN',
     };
 
     const handleStart = () => {
@@ -72,6 +81,7 @@ function Board() {
         setGameState(GAME_STATE.PLAYING);
         setScore(0);
         setMegaUsed(false);
+        setMachineGunActive(false);
     };
     const togglePause = () => {
         setPaused((prev) => !prev);
@@ -112,6 +122,12 @@ function Board() {
             setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
             return { removeShot: false };
         },
+
+        [SHOT_TYPES.MACHINE_GUN]: ({ alien }) => {
+            formationRef.current?.killAlien(alien.id);
+            setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
+            return { removeShot: true };
+        },
     };
 
     const applyShotOnHit = ({ shot, alien }) => {
@@ -120,12 +136,63 @@ function Board() {
         return handler({ shot, alien });
     };
 
+    // Keep refs in sync with state
+    useEffect(() => {
+        shipXRef.current = shipX;
+    }, [shipX]);
+
+    useEffect(() => {
+        machineGunActiveRef.current = machineGunActive;
+    }, [machineGunActive]);
+
+    useEffect(() => {
+        megaUsedRef.current = megaUsed;
+    }, [megaUsed]);
+
     useEffect(() => {
         if (!isPlaying) return;
         if (paused) return;
 
+        const fireShot = (powerType = null) => {
+            const newShot = {
+                id: shotIdRef.current++,
+                xPercent: shipXRef.current,
+                yPercent: SHIP_Y,
+            };
+
+            if (powerType) {
+                newShot.powerType = powerType;
+            }
+
+            setShots((prev) => [...prev, newShot]);
+        };
+
+        const startMachineGunFire = () => {
+            if (machineGunIntervalRef.current) return;
+            // Fire immediately on first press
+            fireShot(SHOT_TYPES.MACHINE_GUN);
+            // Then continue firing at interval
+            machineGunIntervalRef.current = setInterval(() => {
+                fireShot(SHOT_TYPES.MACHINE_GUN);
+            }, MACHINE_GUN_FIRE_RATE_MS);
+        };
+
+        const stopMachineGunFire = () => {
+            if (machineGunIntervalRef.current) {
+                clearInterval(machineGunIntervalRef.current);
+                machineGunIntervalRef.current = null;
+            }
+        };
+
         const onKeyDown = (e) => {
             if (e.repeat) return;
+
+            // Toggle machine gun mode with M key
+            if (e.code === MACHINE_GUN_KEY) {
+                setMachineGunActive((prev) => !prev);
+                return;
+            }
+
             const isSpace = e.code === SPACE;
             const isMega = e.code === MEGA_KEY;
 
@@ -133,25 +200,38 @@ function Board() {
             e.preventDefault();
 
             if (isMega) {
-                if (megaUsed) return;
+                if (megaUsedRef.current) return;
                 setMegaUsed(true);
+                fireShot(SHOT_TYPES.MEGA);
+                return;
             }
 
-            const newShot = {
-                id: shotIdRef.current++,
-                xPercent: shipX,
-                yPercent: SHIP_Y,
-            };
-
-            if (isMega) {
-                newShot.powerType = SHOT_TYPES.MEGA;
+            // Space pressed
+            if (machineGunActiveRef.current) {
+                spaceHeldRef.current = true;
+                startMachineGunFire();
+            } else {
+                // Normal single shot
+                fireShot();
             }
-
-            setShots((prev) => [...prev, newShot]);
         };
+
+        const onKeyUp = (e) => {
+            if (e.code === SPACE) {
+                spaceHeldRef.current = false;
+                stopMachineGunFire();
+            }
+        };
+
         window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [isPlaying, paused, shipX, megaUsed, SHOT_TYPES.MEGA]);
+        window.addEventListener('keyup', onKeyUp);
+
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('keyup', onKeyUp);
+            stopMachineGunFire();
+        };
+    }, [isPlaying, paused]);
 
     const handleShotMove = (shotId, nextPos) => {
         setShots((prevShots) => {
