@@ -42,17 +42,23 @@ function Board() {
     const [showQuiz, setShowQuiz] = useState(false);
     const [megaUsed, setMegaUsed] = useState(false);
     const [machineGunActive, setMachineGunActive] = useState(false);
+    const [machineGunUsed, setMachineGunUsed] = useState(false);
+    const [machineGunTimer, setMachineGunTimer] = useState(0);
     const machineGunIntervalRef = useRef(null);
+    const machineGunTimerRef = useRef(null);
+    const machineGunCountdownRef = useRef(null);
     const spaceHeldRef = useRef(false);
     const shipXRef = useRef(shipX);
     const machineGunActiveRef = useRef(machineGunActive);
     const megaUsedRef = useRef(megaUsed);
+    const machineGunUsedRef = useRef(machineGunUsed);
     const PAUSE_KEY_CODE = 'KeyP';
     const MEGA_KEY = 'KeyZ';
     const MACHINE_GUN_KEY = 'KeyM';
     const SPACE = 'Space';
     const DEFAULT_SHOT = 'DEFAULT';
     const MACHINE_GUN_FIRE_RATE_MS = 100; // Fire every 100ms when machine gun is active
+    const MACHINE_GUN_DURATION_MS = 5000; // Machine gun lasts 5 seconds
 
     const SHOT_TYPES = {
         MEGA: 'MEGA',
@@ -82,6 +88,16 @@ function Board() {
         setScore(0);
         setMegaUsed(false);
         setMachineGunActive(false);
+        setMachineGunUsed(false);
+        setMachineGunTimer(0);
+        if (machineGunTimerRef.current) {
+            clearTimeout(machineGunTimerRef.current);
+            machineGunTimerRef.current = null;
+        }
+        if (machineGunCountdownRef.current) {
+            clearInterval(machineGunCountdownRef.current);
+            machineGunCountdownRef.current = null;
+        }
     };
     const togglePause = () => {
         setPaused((prev) => !prev);
@@ -91,6 +107,17 @@ function Board() {
         setPaused(true);
         setShowQuiz(true);
         setMegaUsed(false);
+        setMachineGunUsed(false);
+        setMachineGunActive(false);
+        setMachineGunTimer(0);
+        if (machineGunTimerRef.current) {
+            clearTimeout(machineGunTimerRef.current);
+            machineGunTimerRef.current = null;
+        }
+        if (machineGunCountdownRef.current) {
+            clearInterval(machineGunCountdownRef.current);
+            machineGunCountdownRef.current = null;
+        }
         setShots([]);
     };
 
@@ -150,6 +177,10 @@ function Board() {
     }, [megaUsed]);
 
     useEffect(() => {
+        machineGunUsedRef.current = machineGunUsed;
+    }, [machineGunUsed]);
+
+    useEffect(() => {
         if (!isPlaying) return;
         if (paused) return;
 
@@ -187,9 +218,28 @@ function Board() {
         const onKeyDown = (e) => {
             if (e.repeat) return;
 
-            // Toggle machine gun mode with M key
             if (e.code === MACHINE_GUN_KEY) {
-                setMachineGunActive((prev) => !prev);
+                if (machineGunUsedRef.current || machineGunActiveRef.current)
+                    return;
+                setMachineGunUsed(true);
+                setMachineGunActive(true);
+                setMachineGunTimer(5);
+                // Start countdown
+                machineGunCountdownRef.current = setInterval(() => {
+                    setMachineGunTimer((prev) => {
+                        if (prev <= 1) {
+                            clearInterval(machineGunCountdownRef.current);
+                            machineGunCountdownRef.current = null;
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                // Auto-deactivate after 5 seconds
+                machineGunTimerRef.current = setTimeout(() => {
+                    setMachineGunActive(false);
+                    machineGunTimerRef.current = null;
+                }, MACHINE_GUN_DURATION_MS);
                 return;
             }
 
@@ -232,6 +282,14 @@ function Board() {
             stopMachineGunFire();
         };
     }, [isPlaying, paused]);
+
+    // Stop machine gun fire when machineGunActive becomes false
+    useEffect(() => {
+        if (!machineGunActive && machineGunIntervalRef.current) {
+            clearInterval(machineGunIntervalRef.current);
+            machineGunIntervalRef.current = null;
+        }
+    }, [machineGunActive]);
 
     const handleShotMove = (shotId, nextPos) => {
         setShots((prevShots) => {
@@ -327,6 +385,10 @@ function Board() {
                 )}
 
                 {!isIdle && renderGame()}
+
+                {machineGunActive && (
+                    <div className="machine-gun-timer">{machineGunTimer}s</div>
+                )}
             </div>
         </div>
     );
