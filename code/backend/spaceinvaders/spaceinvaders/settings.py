@@ -21,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 API_PREFIX = os.getenv('API_PREFIX')
+DB_HOST = os.getenv('DB_HOST')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -85,7 +86,7 @@ DATABASES = {
         'NAME': 'spaceinvaders_schema',
         'USER': 'spaceinvaders_db_user',
         'PASSWORD': 'spaceinvaders_pass',
-        'HOST': 'localhost',
+        'HOST': DB_HOST,
         'PORT': '3306',
     }
 }
@@ -126,3 +127,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
