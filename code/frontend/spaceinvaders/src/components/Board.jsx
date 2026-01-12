@@ -6,6 +6,7 @@ import AlienFormation from '../components/AlienFormation.jsx';
 import GameOver from './GameOver.jsx';
 import ScoreBar from './ScoreBar.jsx';
 import Quiz from './Quiz.jsx';
+import PowerUpNotification from './PowerUpNotification.jsx';
 import { ALIEN_TYPES } from '../constants/alienTypes.js';
 
 const SHIP_Y = 90;
@@ -40,9 +41,10 @@ function Board() {
     const isIdle = gameState === GAME_STATE.IDLE;
     const [paused, setPaused] = useState(false);
     const [showQuiz, setShowQuiz] = useState(false);
-    const [megaUsed, setMegaUsed] = useState(false);
+    const [powerUpNotification, setPowerUpNotification] = useState(null);
+    const [megaUsed, setMegaUsed] = useState(true);
     const [machineGunActive, setMachineGunActive] = useState(false);
-    const [machineGunUsed, setMachineGunUsed] = useState(false);
+    const [machineGunUsed, setMachineGunUsed] = useState(true);
     const [machineGunTimer, setMachineGunTimer] = useState(0);
     const machineGunIntervalRef = useRef(null);
     const machineGunTimerRef = useRef(null);
@@ -106,8 +108,6 @@ function Board() {
     const handleWaveComplete = () => {
         setPaused(true);
         setShowQuiz(true);
-        setMegaUsed(false);
-        setMachineGunUsed(false);
         setMachineGunActive(false);
         setMachineGunTimer(0);
         if (machineGunTimerRef.current) {
@@ -121,9 +121,28 @@ function Board() {
         setShots([]);
     };
 
-    const handleQuizComplete = () => {
+    const handleQuizComplete = (isCorrect) => {
         setShowQuiz(false);
         setPaused(false);
+
+        if (isCorrect) {
+            const powerUps = ['machineGun', 'megaShot', 'slowDown'];
+            const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+
+            if (randomPowerUp === 'machineGun') {
+                setMachineGunUsed(false);
+            } else if (randomPowerUp === 'megaShot') {
+                setMegaUsed(false);
+            } else if (randomPowerUp === 'slowDown') {
+                formationRef.current?.slowAliens();
+            }
+
+            setPowerUpNotification(randomPowerUp);
+        }
+    };
+
+    const handlePowerUpDismiss = () => {
+        setPowerUpNotification(null);
     };
 
     useEffect(() => {
@@ -361,6 +380,13 @@ function Board() {
                 )}
 
                 {showQuiz && <Quiz onComplete={handleQuizComplete} />}
+
+                {powerUpNotification && (
+                    <PowerUpNotification
+                        type={powerUpNotification}
+                        onDismiss={handlePowerUpDismiss}
+                    />
+                )}
             </div>
         );
     };
