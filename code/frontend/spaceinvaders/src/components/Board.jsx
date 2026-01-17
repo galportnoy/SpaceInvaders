@@ -8,6 +8,7 @@ import ScoreBar from './ScoreBar.jsx';
 import Quiz from './Quiz.jsx';
 import PowerUpNotification from './PowerUpNotification.jsx';
 import { ALIEN_TYPES } from '../constants/alienTypes.js';
+import GameInstructions from './GameStartInstructions.jsx';
 
 const SHIP_Y = 90;
 const HIT_X = 2;
@@ -127,7 +128,8 @@ function Board() {
 
         if (isCorrect) {
             const powerUps = ['machineGun', 'megaShot', 'slowDown'];
-            const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+            const randomPowerUp =
+                powerUps[Math.floor(Math.random() * powerUps.length)];
 
             if (randomPowerUp === 'machineGun') {
                 setMachineGunUsed(false);
@@ -404,11 +406,7 @@ function Board() {
             </div>
 
             <div className="board">
-                {isIdle && (
-                    <button className="start-button" onClick={handleStart}>
-                        start
-                    </button>
-                )}
+                {isIdle && <GameInstructions onStart={handleStart} />}
 
                 {!isIdle && renderGame()}
 
