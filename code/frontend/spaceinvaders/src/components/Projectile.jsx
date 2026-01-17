@@ -4,7 +4,14 @@ import './Projectile.css';
 const SHOT_SPEED = 2;
 const PROJECTILE_INTERVAL_MS = 30;
 
-function Projectile({ startX, startY, onMove, onDone, paused = false }) {
+function Projectile({
+    startX,
+    startY,
+    onMove,
+    onDone,
+    paused = false,
+    powerType = 'DEFAULT',
+}) {
     const [pos, setPos] = useState({
         xPercent: startX,
         yPercent: startY,
@@ -52,7 +59,7 @@ function Projectile({ startX, startY, onMove, onDone, paused = false }) {
 
     return (
         <div
-            className="projectile"
+            className={`projectile ${powerType === 'MEGA' ? 'projectile-mega' : ''}`}
             style={{
                 left: `${pos.xPercent}%`,
                 top: `${pos.yPercent}%`,
