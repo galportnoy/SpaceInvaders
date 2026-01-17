@@ -205,10 +205,10 @@ function Board() {
         if (!isPlaying) return;
         if (paused) return;
 
-        const fireShot = (powerType = null) => {
+        const fireShot = (powerType = null, xOverride = null) => {
             const newShot = {
                 id: shotIdRef.current++,
-                xPercent: shipXRef.current,
+                xPercent: xOverride ?? shipXRef.current,
                 yPercent: SHIP_Y,
             };
 
@@ -273,7 +273,9 @@ function Board() {
             if (isMega) {
                 if (megaUsedRef.current) return;
                 setMegaUsed(true);
-                fireShot(SHOT_TYPES.MEGA);
+                const spread = 2.2;
+                fireShot(SHOT_TYPES.MEGA, shipXRef.current - spread);
+                fireShot(SHOT_TYPES.MEGA, shipXRef.current + spread);
                 return;
             }
 
@@ -371,6 +373,7 @@ function Board() {
                         key={s.id}
                         startX={s.xPercent}
                         startY={s.yPercent}
+                        powerType={s.powerType || 'DEFAULT'}
                         paused={paused || showQuiz}
                         onMove={(nextPos) => handleShotMove(s.id, nextPos)}
                         onDone={() => handleProjectileDone(s.id)}
