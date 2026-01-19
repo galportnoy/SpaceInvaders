@@ -5,7 +5,10 @@ import Projectile from './Projectile.jsx';
 import AlienFormation from '../components/AlienFormation.jsx';
 import GameOver from './GameOver.jsx';
 import ScoreBar from './ScoreBar.jsx';
+import Quiz from './Quiz.jsx';
+import PowerUpNotification from './PowerUpNotification.jsx';
 import { ALIEN_TYPES } from '../constants/alienTypes.js';
+import GameInstructions from './GameStartInstructions.jsx';
 
 const SHIP_Y = 90;
 const HIT_X = 2;
@@ -38,7 +41,76 @@ function Board() {
     const isGameOver = gameState === GAME_STATE.GAME_OVER;
     const isIdle = gameState === GAME_STATE.IDLE;
     const [paused, setPaused] = useState(false);
+    const [showQuiz, setShowQuiz] = useState(false);
+    const [powerUpNotification, setPowerUpNotification] = useState(null);
+    const [megaUsed, setMegaUsed] = useState(true);
+    const [machineGunActive, setMachineGunActive] = useState(false);
+    const [machineGunUsed, setMachineGunUsed] = useState(true);
+    const [activeTimer, setActiveTimer] = useState({ type: null, timeLeft: 0 });
+    const timerIntervalRef = useRef(null);
+    const timerTimeoutRef = useRef(null);
+    const machineGunIntervalRef = useRef(null);
+    const spaceHeldRef = useRef(false);
+    const shipXRef = useRef(shipX);
+    const machineGunActiveRef = useRef(machineGunActive);
+    const megaUsedRef = useRef(megaUsed);
+    const machineGunUsedRef = useRef(machineGunUsed);
+    const activeTimerRef = useRef(activeTimer);
     const PAUSE_KEY_CODE = 'KeyP';
+    const MEGA_KEY = 'KeyZ';
+    const MACHINE_GUN_KEY = 'KeyM';
+    const SPACE = 'Space';
+    const DEFAULT_SHOT = 'DEFAULT';
+    const MACHINE_GUN_FIRE_RATE_MS = 100; // Fire every 100ms when machine gun is active
+// Machine gun lasts 5 seconds
+
+    const SHOT_TYPES = {
+        MEGA: 'MEGA',
+        MACHINE_GUN: 'MACHINE_GUN',
+    };
+
+    const TIMER_TYPES = {
+        MACHINE_GUN: 'machineGun',
+        SLOW_DOWN: 'slowDown',
+    };
+
+    const startTimer = (type, durationSeconds, onComplete = () => { }) => {
+        // Clear existing timer
+        stopTimer();
+
+        // Set initial state
+        setActiveTimer({ type, timeLeft: durationSeconds });
+
+        // Countdown interval
+        timerIntervalRef.current = setInterval(() => {
+            setActiveTimer((prev) => {
+                if (prev.timeLeft <= 1) {
+                    clearInterval(timerIntervalRef.current);
+                    timerIntervalRef.current = null;
+                    return { ...prev, timeLeft: 0 };
+                }
+                return { ...prev, timeLeft: prev.timeLeft - 1 };
+            });
+        }, 1000);
+
+        // Duration timeout
+        timerTimeoutRef.current = setTimeout(() => {
+            stopTimer();
+            onComplete();
+        }, durationSeconds * 1000);
+    };
+
+    const stopTimer = () => {
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+        if (timerTimeoutRef.current) {
+            clearTimeout(timerTimeoutRef.current);
+            timerTimeoutRef.current = null;
+        }
+        setActiveTimer({ type: null, timeLeft: 0 });
+    };
 
     const handleStart = () => {
         setPaused(false);
@@ -56,18 +128,58 @@ function Board() {
         setShipX(50);
         setShots([]);
         setPaused(false);
+        setShowQuiz(false);
         setAliensPositions([]);
         setGameKey((prev) => prev + 1);
         setGameState(GAME_STATE.PLAYING);
         setScore(0);
+        setMegaUsed(false);
+        setMachineGunActive(false);
+        setMachineGunUsed(false);
+        stopTimer();
     };
     const togglePause = () => {
         setPaused((prev) => !prev);
     };
 
+    const handleWaveComplete = () => {
+        setPaused(true);
+        setShowQuiz(true);
+        setMachineGunActive(false);
+        stopTimer();
+        setShots([]);
+    };
+
+    const handleQuizComplete = (isCorrect) => {
+        setShowQuiz(false);
+        setPaused(false);
+
+        if (isCorrect) {
+            const powerUps = ['machineGun', 'megaShot', 'slowDown'];
+            const randomPowerUp =
+                powerUps[Math.floor(Math.random() * powerUps.length)];
+
+            if (randomPowerUp === 'machineGun') {
+                setMachineGunUsed(false);
+            } else if (randomPowerUp === 'megaShot') {
+                setMegaUsed(false);
+            } else if (randomPowerUp === 'slowDown') {
+                formationRef.current?.slowAliens();
+                startTimer(TIMER_TYPES.SLOW_DOWN, 10)
+            }
+
+            setPowerUpNotification(randomPowerUp);
+        }
+    };
+
+    const handlePowerUpDismiss = () => {
+        setPowerUpNotification(null);
+    };
+
     useEffect(() => {
         const onKeyDown = (e) => {
             if (!isPlaying) return;
+            if (e.repeat) return;
             if (e.code !== PAUSE_KEY_CODE) return;
             togglePause();
         };
@@ -75,30 +187,159 @@ function Board() {
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [isPlaying]);
 
+    const shotHitHandlers = {
+        DEFAULT: ({ alien }) => {
+            formationRef.current?.killAlien(alien.id);
+            setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
+            return { removeShot: true };
+        },
+
+        [SHOT_TYPES.MEGA]: ({ alien }) => {
+            formationRef.current?.killAlien(alien.id);
+            setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
+            return { removeShot: false };
+        },
+
+        [SHOT_TYPES.MACHINE_GUN]: ({ alien }) => {
+            formationRef.current?.killAlien(alien.id);
+            setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
+            return { removeShot: true };
+        },
+    };
+
+    const applyShotOnHit = ({ shot, alien }) => {
+        const type = shot.powerType || DEFAULT_SHOT;
+        const handler = shotHitHandlers[type] || shotHitHandlers[DEFAULT_SHOT];
+        return handler({ shot, alien });
+    };
+
+    // Keep refs in sync with state
+    useEffect(() => {
+        shipXRef.current = shipX;
+    }, [shipX]);
+
+    useEffect(() => {
+        machineGunActiveRef.current = machineGunActive;
+    }, [machineGunActive]);
+
+    useEffect(() => {
+        megaUsedRef.current = megaUsed;
+    }, [megaUsed]);
+
+    useEffect(() => {
+        machineGunUsedRef.current = machineGunUsed;
+    }, [machineGunUsed]);
+
+    useEffect(() => {
+        activeTimerRef.current = activeTimer;
+    }, [activeTimer]);
+
     useEffect(() => {
         if (!isPlaying) return;
         if (paused) return;
 
-        const onKeyDown = (e) => {
-            e.preventDefault();
-            if (e.key !== ' ') return;
-            if (e.repeat) return;
-
+        const fireShot = (powerType = null, xOverride = null) => {
             const newShot = {
                 id: shotIdRef.current++,
-                xPercent: shipX,
+                xPercent: xOverride ?? shipXRef.current,
                 yPercent: SHIP_Y,
             };
 
+            if (powerType) {
+                newShot.powerType = powerType;
+            }
+
             setShots((prev) => [...prev, newShot]);
         };
+
+        const startMachineGunFire = () => {
+            if (machineGunIntervalRef.current) return;
+            // Fire immediately on first press
+            fireShot(SHOT_TYPES.MACHINE_GUN);
+            // Then continue firing at interval
+            machineGunIntervalRef.current = setInterval(() => {
+                fireShot(SHOT_TYPES.MACHINE_GUN);
+            }, MACHINE_GUN_FIRE_RATE_MS);
+        };
+
+        const stopMachineGunFire = () => {
+            if (machineGunIntervalRef.current) {
+                clearInterval(machineGunIntervalRef.current);
+                machineGunIntervalRef.current = null;
+            }
+        };
+
+        const onKeyDown = (e) => {
+            if (e.repeat) return;
+
+            if (e.code === MACHINE_GUN_KEY) {
+                if (machineGunUsedRef.current || machineGunActiveRef.current)
+                    return;
+                setMachineGunUsed(true);
+                setMachineGunActive(true);
+                startTimer(TIMER_TYPES.MACHINE_GUN, 5, () => {
+                    setMachineGunActive(false);
+                });
+                return;
+            }
+
+            const isSpace = e.code === SPACE;
+            const isMega = e.code === MEGA_KEY;
+
+            if (!isSpace && !isMega) return;
+            e.preventDefault();
+
+            if (isMega) {
+                if (megaUsedRef.current) return;
+                setMegaUsed(true);
+                const spread = 2.2;
+                fireShot(SHOT_TYPES.MEGA, shipXRef.current - spread);
+                fireShot(SHOT_TYPES.MEGA, shipXRef.current + spread);
+                return;
+            }
+
+            // Space pressed
+            if (machineGunActiveRef.current) {
+                spaceHeldRef.current = true;
+                startMachineGunFire();
+            } else {
+                // Normal single shot
+                fireShot();
+            }
+        };
+
+        const onKeyUp = (e) => {
+            if (e.code === SPACE) {
+                spaceHeldRef.current = false;
+                stopMachineGunFire();
+            }
+        };
+
         window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [isPlaying, paused, shipX]);
+        window.addEventListener('keyup', onKeyUp);
+
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('keyup', onKeyUp);
+            stopMachineGunFire();
+            stopTimer();
+        };
+    }, [isPlaying, paused]);
+
+    // Stop machine gun fire when machineGunActive becomes false
+    useEffect(() => {
+        if (!machineGunActive && machineGunIntervalRef.current) {
+            clearInterval(machineGunIntervalRef.current);
+            machineGunIntervalRef.current = null;
+        }
+    }, [machineGunActive]);
 
     const handleShotMove = (shotId, nextPos) => {
         setShots((prevShots) => {
-            return prevShots.map((shot) => {
+            const currentShot = prevShots.find((s) => s.id === shotId);
+            if (!currentShot) return prevShots;
+
+            let nextShots = prevShots.map((shot) => {
                 if (shot.id === shotId) {
                     return {
                         ...shot,
@@ -108,19 +349,25 @@ function Board() {
                 }
                 return shot;
             });
-        });
 
-        for (const alien of aliensPositions) {
-            const dx = Math.abs(nextPos.xPercent - alien.xPercent);
-            const dy = Math.abs(nextPos.yPercent - alien.yPercent);
+            for (const alien of aliensPositions) {
+                const dx = Math.abs(nextPos.xPercent - alien.xPercent);
+                const dy = Math.abs(nextPos.yPercent - alien.yPercent);
 
-            if (dx <= HIT_X && dy <= HIT_Y) {
-                formationRef.current?.killAlien(alien.id);
-                setShots((prev) => prev.filter((s) => s.id !== shotId));
-                setScore((prev) => prev + SCORE_PER_TYPE_MAP[alien.type]);
-                break;
+                if (dx <= HIT_X && dy <= HIT_Y) {
+                    const { removeShot } = applyShotOnHit({
+                        shot: currentShot,
+                        alien,
+                    });
+
+                    if (removeShot) {
+                        nextShots = nextShots.filter((s) => s.id !== shotId);
+                    }
+                    break;
+                }
             }
-        }
+            return nextShots;
+        });
     };
 
     const handleProjectileDone = (shotId) => {
@@ -133,16 +380,21 @@ function Board() {
                 <AlienFormation
                     ref={formationRef}
                     gameOver={isGameOver}
-                    paused={paused}
+                    paused={paused || showQuiz}
                     onAliensChange={handleAliensPositionChange}
+                    onWaveComplete={handleWaveComplete}
                 />
-                <Spaceship onPositionChange={setShipX} paused={paused} />
+                <Spaceship
+                    onPositionChange={setShipX}
+                    paused={paused || showQuiz}
+                />
                 {shots.map((s) => (
                     <Projectile
                         key={s.id}
                         startX={s.xPercent}
                         startY={s.yPercent}
-                        paused={paused}
+                        powerType={s.powerType || 'DEFAULT'}
+                        paused={paused || showQuiz}
                         onMove={(nextPos) => handleShotMove(s.id, nextPos)}
                         onDone={() => handleProjectileDone(s.id)}
                     />
@@ -150,6 +402,15 @@ function Board() {
 
                 {isGameOver && (
                     <GameOver score={score} onPlayAgain={handlePlayAgain} />
+                )}
+
+                {showQuiz && <Quiz onComplete={handleQuizComplete} />}
+
+                {powerUpNotification && (
+                    <PowerUpNotification
+                        type={powerUpNotification}
+                        onDismiss={handlePowerUpDismiss}
+                    />
                 )}
             </div>
         );
@@ -168,13 +429,17 @@ function Board() {
             </div>
 
             <div className="board">
-                {isIdle && (
-                    <button className="start-button" onClick={handleStart}>
-                        start
-                    </button>
-                )}
+                {isIdle && <GameInstructions onStart={handleStart} />}
 
                 {!isIdle && renderGame()}
+
+                {activeTimer.type === TIMER_TYPES.MACHINE_GUN && (
+                    <div className="machine-gun-timer">{activeTimer.timeLeft}s</div>
+                )}
+
+                {activeTimer.type === TIMER_TYPES.SLOW_DOWN && (
+                    <div className="slow-down-timer">{activeTimer.timeLeft}s</div>
+                )}
             </div>
         </div>
     );

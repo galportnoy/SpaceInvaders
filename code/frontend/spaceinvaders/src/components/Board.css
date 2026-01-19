@@ -8,12 +8,13 @@
     justify-content: center;
     align-items: center;
 }
+
 .board {
     width: min(90vw, 900px);
     aspect-ratio: 4 / 3;
 
 
-    background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.06), transparent 55%),
+    background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.06), transparent 55%),
     #0a0a0a;
 
 
@@ -60,8 +61,14 @@
     pointer-events: none;
 }
 
-.hud > * {
+.hud>* {
     pointer-events: auto;
+}
+
+.hud-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 
@@ -76,4 +83,87 @@
     border-radius: 8px;
 
     cursor: pointer;
+}
+
+.machine-gun-indicator {
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 500;
+
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+
+    transition: all 0.2s ease;
+}
+
+.machine-gun-indicator.active {
+    color: #ff6b35;
+    background: rgba(255, 107, 53, 0.15);
+    border-color: rgba(255, 107, 53, 0.4);
+    box-shadow: 0 0 12px rgba(255, 107, 53, 0.3);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 12px rgba(255, 107, 53, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+    }
+}
+
+.machine-gun-timer {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+
+    padding: 10px 15px;
+    font-size: 24px;
+    font-weight: bold;
+
+    color: #ff6b35;
+    background: rgba(255, 107, 53, 0.15);
+    border: 2px solid rgba(255, 107, 53, 0.4);
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
+
+    animation: pulse 0.5s infinite;
+    z-index: 10;
+}
+
+.slow-down-timer {
+    position: absolute;
+    right: 15px;
+    top: 80px;
+
+    padding: 10px 15px;
+    font-size: 24px;
+    font-weight: bold;
+
+    color: #00d4ff;
+    background: rgba(0, 212, 255, 0.15);
+    border: 2px solid rgba(0, 212, 255, 0.4);
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+
+    animation: pulse-blue 0.5s infinite;
+    z-index: 10;
+}
+
+@keyframes pulse-blue {
+
+    0%,
+    100% {
+        box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    }
 }

@@ -6,3 +6,10 @@
     transform: translateX(-50%);
     border-radius: 3px;
 }
+.projectile-mega {
+    width: 1.2%;
+    height: 4.2%;
+    border-radius: 10px;
+    background: #00E5FF;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
+}

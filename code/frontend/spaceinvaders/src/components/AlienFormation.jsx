@@ -12,6 +12,8 @@ const ROWS = 5;
 const COLS = 10;
 const SPACE_BETWEEN_ALIENS = 6;
 const MOVE_SPEED = 2;
+const SLOW_SPEED = 0.5;
+const SLOW_DURATION_MS = 10000;
 const STEP_DOWN = 5;
 const RIGHT_BORDER = 95;
 const LEFT_BORDER = 5;
@@ -33,7 +35,7 @@ function createAlienArray() {
 }
 
 const AlienFormation = forwardRef(function AlienFormation(
-    { onAliensChange, gameOver = false, paused = false },
+    { onAliensChange, onWaveComplete, gameOver = false, paused = false },
     ref
 ) {
     const [offsetX, setOffsetX] = useState(20);
@@ -43,6 +45,7 @@ const AlienFormation = forwardRef(function AlienFormation(
     const gameOverRef = useRef(gameOver);
     const alienArrayRef = useRef(alienArray);
     const difficultySpeedRef = useRef(0);
+    const slowedRef = useRef(false);
 
     const pausedRef = useRef(paused);
 
@@ -64,6 +67,7 @@ const AlienFormation = forwardRef(function AlienFormation(
         direction.current = 1;
         setAlienArray(createAlienArray());
         difficultySpeedRef.current += 0.5;
+        if (onWaveComplete) onWaveComplete();
     };
 
     useEffect(() => {
@@ -87,7 +91,10 @@ const AlienFormation = forwardRef(function AlienFormation(
             const boundLeft = Math.min(...aliveCols);
 
             setOffsetX((prevX) => {
-                const nextX = prevX + direction.current * (MOVE_SPEED + difficultySpeedRef.current);
+                const currentSpeed = slowedRef.current
+                    ? SLOW_SPEED
+                    : MOVE_SPEED + difficultySpeedRef.current;
+                const nextX = prevX + direction.current * currentSpeed;
                 const rightEdge = nextX + boundRight * SPACE_BETWEEN_ALIENS;
                 const leftEdge = nextX + boundLeft * SPACE_BETWEEN_ALIENS;
                 const hitBorder =
@@ -131,6 +138,13 @@ const AlienFormation = forwardRef(function AlienFormation(
                             : alien
                     )
                 );
+            },
+            slowAliens: () => {
+                if (slowedRef.current) return;
+                slowedRef.current = true;
+                setTimeout(() => {
+                    slowedRef.current = false;
+                }, SLOW_DURATION_MS);
             },
         }),
         []
