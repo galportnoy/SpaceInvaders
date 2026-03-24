@@ -1,0 +1,277 @@
+.instructions-container {
+    display: flex;
+    gap: 30px;
+    padding: 25px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+.start-section {
+    flex: 0 0 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+}
+
+.game-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.title-ship {
+    width: 28px;
+    height: auto;
+    filter: drop-shadow(0 0 8px rgba(100, 200, 255, 0.6));
+}
+
+.section-icon {
+    width: 22px;
+    height: auto;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+.start-button-new {
+    padding: 20px 36px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.start-button-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+}
+
+.scoring-box-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.scoring-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.alien-scores-left {
+    display: flex;
+    gap: 16px;
+}
+
+.alien-score-item-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.alien-score-img-left {
+    width: 26px;
+    height: auto;
+}
+
+.alien-points-left {
+    font-size: 12px;
+    font-weight: bold;
+    color: #64ffda;
+}
+
+.instructions-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+.welcome-box,
+.trivia-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 14px 18px;
+}
+
+.welcome-box h2 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #fff;
+}
+
+.welcome-box p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+}
+
+.welcome-box .warning {
+    color: #ffcc00;
+    font-weight: 500;
+    margin: 10px 0 0 0;
+}
+
+.controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.controls-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+}
+
+.controls-hint {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    justify-content: center;
+}
+
+.controls-hint span {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trivia-box h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    color: #fff;
+}
+
+.trivia-box p {
+    margin: 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.highlight {
+    color: #64ffda;
+    font-weight: 500;
+}
+
+.scoring-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 12px 18px;
+}
+
+.scoring-box h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #fff;
+}
+
+.alien-scores {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+.alien-score-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.alien-score-img {
+    width: 32px;
+    height: auto;
+}
+
+.alien-points {
+    font-size: 14px;
+    font-weight: bold;
+    color: #64ffda;
+}
+
+.powerups-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 14px 18px;
+}
+
+.powerups-section h3 {
+    margin: 0 0 14px 0;
+    font-size: 16px;
+    color: #fff;
+}
+
+.powerup-cards {
+    display: flex;
+    gap: 12px;
+}
+
+.powerup-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.powerup-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.powerup-emoji {
+    font-size: 36px;
+}
+
+.powerup-name {
+    font-size: 15px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.powerup-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: center;
+    line-height: 1.45;
+}
+
+.powerup-duration {
+    font-size: 11px;
+    color: rgba(100, 255, 218, 0.9);
+    background: rgba(100, 255, 218, 0.12);
+    padding: 4px 12px;
+    border-radius: 10px;
+}

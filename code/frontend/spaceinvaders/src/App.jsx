@@ -4,7 +4,7 @@ import './App.css';
 function App() {
     return (
         <div>
-            <h1 className="game-title">Space Invaders</h1>
+            <h1 className="app-title">Space Invaders</h1>
             <Board />
         </div>
     );

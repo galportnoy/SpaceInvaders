@@ -6,7 +6,9 @@ import AlienFormation from '../components/AlienFormation.jsx';
 import GameOver from './GameOver.jsx';
 import ScoreBar from './ScoreBar.jsx';
 import Quiz from './Quiz.jsx';
+import PowerUpNotification from './PowerUpNotification.jsx';
 import { ALIEN_TYPES } from '../constants/alienTypes.js';
+import GameInstructions from './GameStartInstructions.jsx';
 
 const SHIP_Y = 90;
 const HIT_X = 2;
@@ -40,29 +42,74 @@ function Board() {
     const isIdle = gameState === GAME_STATE.IDLE;
     const [paused, setPaused] = useState(false);
     const [showQuiz, setShowQuiz] = useState(false);
-    const [megaUsed, setMegaUsed] = useState(false);
+    const [powerUpNotification, setPowerUpNotification] = useState(null);
+    const [megaUsed, setMegaUsed] = useState(true);
     const [machineGunActive, setMachineGunActive] = useState(false);
-    const [machineGunUsed, setMachineGunUsed] = useState(false);
-    const [machineGunTimer, setMachineGunTimer] = useState(0);
+    const [machineGunUsed, setMachineGunUsed] = useState(true);
+    const [activeTimer, setActiveTimer] = useState({ type: null, timeLeft: 0 });
+    const timerIntervalRef = useRef(null);
+    const timerTimeoutRef = useRef(null);
     const machineGunIntervalRef = useRef(null);
-    const machineGunTimerRef = useRef(null);
-    const machineGunCountdownRef = useRef(null);
     const spaceHeldRef = useRef(false);
     const shipXRef = useRef(shipX);
     const machineGunActiveRef = useRef(machineGunActive);
     const megaUsedRef = useRef(megaUsed);
     const machineGunUsedRef = useRef(machineGunUsed);
+    const activeTimerRef = useRef(activeTimer);
     const PAUSE_KEY_CODE = 'KeyP';
     const MEGA_KEY = 'KeyZ';
     const MACHINE_GUN_KEY = 'KeyM';
     const SPACE = 'Space';
     const DEFAULT_SHOT = 'DEFAULT';
     const MACHINE_GUN_FIRE_RATE_MS = 100; // Fire every 100ms when machine gun is active
-    const MACHINE_GUN_DURATION_MS = 5000; // Machine gun lasts 5 seconds
+// Machine gun lasts 5 seconds
 
     const SHOT_TYPES = {
         MEGA: 'MEGA',
         MACHINE_GUN: 'MACHINE_GUN',
+    };
+
+    const TIMER_TYPES = {
+        MACHINE_GUN: 'machineGun',
+        SLOW_DOWN: 'slowDown',
+    };
+
+    const startTimer = (type, durationSeconds, onComplete = () => { }) => {
+        // Clear existing timer
+        stopTimer();
+
+        // Set initial state
+        setActiveTimer({ type, timeLeft: durationSeconds });
+
+        // Countdown interval
+        timerIntervalRef.current = setInterval(() => {
+            setActiveTimer((prev) => {
+                if (prev.timeLeft <= 1) {
+                    clearInterval(timerIntervalRef.current);
+                    timerIntervalRef.current = null;
+                    return { ...prev, timeLeft: 0 };
+                }
+                return { ...prev, timeLeft: prev.timeLeft - 1 };
+            });
+        }, 1000);
+
+        // Duration timeout
+        timerTimeoutRef.current = setTimeout(() => {
+            stopTimer();
+            onComplete();
+        }, durationSeconds * 1000);
+    };
+
+    const stopTimer = () => {
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+        if (timerTimeoutRef.current) {
+            clearTimeout(timerTimeoutRef.current);
+            timerTimeoutRef.current = null;
+        }
+        setActiveTimer({ type: null, timeLeft: 0 });
     };
 
     const handleStart = () => {
@@ -89,15 +136,7 @@ function Board() {
         setMegaUsed(false);
         setMachineGunActive(false);
         setMachineGunUsed(false);
-        setMachineGunTimer(0);
-        if (machineGunTimerRef.current) {
-            clearTimeout(machineGunTimerRef.current);
-            machineGunTimerRef.current = null;
-        }
-        if (machineGunCountdownRef.current) {
-            clearInterval(machineGunCountdownRef.current);
-            machineGunCountdownRef.current = null;
-        }
+        stopTimer();
     };
     const togglePause = () => {
         setPaused((prev) => !prev);
@@ -106,24 +145,35 @@ function Board() {
     const handleWaveComplete = () => {
         setPaused(true);
         setShowQuiz(true);
-        setMegaUsed(false);
-        setMachineGunUsed(false);
         setMachineGunActive(false);
-        setMachineGunTimer(0);
-        if (machineGunTimerRef.current) {
-            clearTimeout(machineGunTimerRef.current);
-            machineGunTimerRef.current = null;
-        }
-        if (machineGunCountdownRef.current) {
-            clearInterval(machineGunCountdownRef.current);
-            machineGunCountdownRef.current = null;
-        }
+        stopTimer();
         setShots([]);
     };
 
-    const handleQuizComplete = () => {
+    const handleQuizComplete = (isCorrect) => {
         setShowQuiz(false);
         setPaused(false);
+
+        if (isCorrect) {
+            const powerUps = ['machineGun', 'megaShot', 'slowDown'];
+            const randomPowerUp =
+                powerUps[Math.floor(Math.random() * powerUps.length)];
+
+            if (randomPowerUp === 'machineGun') {
+                setMachineGunUsed(false);
+            } else if (randomPowerUp === 'megaShot') {
+                setMegaUsed(false);
+            } else if (randomPowerUp === 'slowDown') {
+                formationRef.current?.slowAliens();
+                startTimer(TIMER_TYPES.SLOW_DOWN, 10)
+            }
+
+            setPowerUpNotification(randomPowerUp);
+        }
+    };
+
+    const handlePowerUpDismiss = () => {
+        setPowerUpNotification(null);
     };
 
     useEffect(() => {
@@ -181,13 +231,17 @@ function Board() {
     }, [machineGunUsed]);
 
     useEffect(() => {
+        activeTimerRef.current = activeTimer;
+    }, [activeTimer]);
+
+    useEffect(() => {
         if (!isPlaying) return;
         if (paused) return;
 
-        const fireShot = (powerType = null) => {
+        const fireShot = (powerType = null, xOverride = null) => {
             const newShot = {
                 id: shotIdRef.current++,
-                xPercent: shipXRef.current,
+                xPercent: xOverride ?? shipXRef.current,
                 yPercent: SHIP_Y,
             };
 
@@ -223,23 +277,9 @@ function Board() {
                     return;
                 setMachineGunUsed(true);
                 setMachineGunActive(true);
-                setMachineGunTimer(5);
-                // Start countdown
-                machineGunCountdownRef.current = setInterval(() => {
-                    setMachineGunTimer((prev) => {
-                        if (prev <= 1) {
-                            clearInterval(machineGunCountdownRef.current);
-                            machineGunCountdownRef.current = null;
-                            return 0;
-                        }
-                        return prev - 1;
-                    });
-                }, 1000);
-                // Auto-deactivate after 5 seconds
-                machineGunTimerRef.current = setTimeout(() => {
+                startTimer(TIMER_TYPES.MACHINE_GUN, 5, () => {
                     setMachineGunActive(false);
-                    machineGunTimerRef.current = null;
-                }, MACHINE_GUN_DURATION_MS);
+                });
                 return;
             }
 
@@ -252,7 +292,9 @@ function Board() {
             if (isMega) {
                 if (megaUsedRef.current) return;
                 setMegaUsed(true);
-                fireShot(SHOT_TYPES.MEGA);
+                const spread = 2.2;
+                fireShot(SHOT_TYPES.MEGA, shipXRef.current - spread);
+                fireShot(SHOT_TYPES.MEGA, shipXRef.current + spread);
                 return;
             }
 
@@ -280,6 +322,7 @@ function Board() {
             window.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('keyup', onKeyUp);
             stopMachineGunFire();
+            stopTimer();
         };
     }, [isPlaying, paused]);
 
@@ -350,6 +393,7 @@ function Board() {
                         key={s.id}
                         startX={s.xPercent}
                         startY={s.yPercent}
+                        powerType={s.powerType || 'DEFAULT'}
                         paused={paused || showQuiz}
                         onMove={(nextPos) => handleShotMove(s.id, nextPos)}
                         onDone={() => handleProjectileDone(s.id)}
@@ -361,6 +405,13 @@ function Board() {
                 )}
 
                 {showQuiz && <Quiz onComplete={handleQuizComplete} />}
+
+                {powerUpNotification && (
+                    <PowerUpNotification
+                        type={powerUpNotification}
+                        onDismiss={handlePowerUpDismiss}
+                    />
+                )}
             </div>
         );
     };
@@ -378,16 +429,16 @@ function Board() {
             </div>
 
             <div className="board">
-                {isIdle && (
-                    <button className="start-button" onClick={handleStart}>
-                        start
-                    </button>
-                )}
+                {isIdle && <GameInstructions onStart={handleStart} />}
 
                 {!isIdle && renderGame()}
 
-                {machineGunActive && (
-                    <div className="machine-gun-timer">{machineGunTimer}s</div>
+                {activeTimer.type === TIMER_TYPES.MACHINE_GUN && (
+                    <div className="machine-gun-timer">{activeTimer.timeLeft}s</div>
+                )}
+
+                {activeTimer.type === TIMER_TYPES.SLOW_DOWN && (
+                    <div className="slow-down-timer">{activeTimer.timeLeft}s</div>
                 )}
             </div>
         </div>

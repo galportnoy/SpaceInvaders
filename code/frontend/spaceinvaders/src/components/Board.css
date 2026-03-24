@@ -136,3 +136,34 @@
     animation: pulse 0.5s infinite;
     z-index: 10;
 }
+
+.slow-down-timer {
+    position: absolute;
+    right: 15px;
+    top: 80px;
+
+    padding: 10px 15px;
+    font-size: 24px;
+    font-weight: bold;
+
+    color: #00d4ff;
+    background: rgba(0, 212, 255, 0.15);
+    border: 2px solid rgba(0, 212, 255, 0.4);
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+
+    animation: pulse-blue 0.5s infinite;
+    z-index: 10;
+}
+
+@keyframes pulse-blue {
+
+    0%,
+    100% {
+        box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    }
+}
