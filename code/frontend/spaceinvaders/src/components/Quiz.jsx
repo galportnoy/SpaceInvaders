@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import './Quiz.css';
 
-const API_URL = '/api/quiz/';
+const API_URL = `${import.meta.env.VITE_API_BASE || '/api'}/quiz/`;
 
 function decodeHTML(html) {
     const txt = document.createElement('textarea');
