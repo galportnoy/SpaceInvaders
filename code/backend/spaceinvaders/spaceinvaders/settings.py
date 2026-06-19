@@ -20,19 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / '.env')
 
-API_PREFIX = os.getenv('API_PREFIX')
-DB_HOST = os.getenv('DB_HOST')
+API_PREFIX = os.getenv('API_PREFIX', '')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-3sp$m5#)$m$w)2*5ehv(xg3kxj&45x4sizwf5)lpd%#q)he-^m')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3sp$m5#)$m$w)2*5ehv(xg3kxj&45x4sizwf5)lpd%#q)he-^m'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ["localhost", "aspis.sapir.ac.il", "127.0.0.1"]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -44,11 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
+    'rest_framework',
     'spaceinvaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -56,6 +54,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if os.getenv('CORS_ALLOWED_ORIGINS') else []
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 ROOT_URLCONF = 'spaceinvaders.urls'
 
@@ -83,11 +84,11 @@ WSGI_APPLICATION = 'spaceinvaders.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'spaceinvaders_schema',
-        'USER': 'spaceinvaders_db_user',
-        'PASSWORD': 'spaceinvaders_pass',
-        'HOST': DB_HOST,
-        'PORT': '3306',
+        'NAME': os.getenv('MYSQL_DATABASE', 'spaceinvaders_schema'),
+        'USER': os.getenv('MYSQL_USER', 'spaceinvaders_db_user'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'spaceinvaders_pass'),
+        'HOST': os.getenv('MYSQL_HOST', os.getenv('DB_HOST', '127.0.0.1')),
+        'PORT': os.getenv('MYSQL_PORT', '3306'),
     }
 }
 
@@ -128,3 +129,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
